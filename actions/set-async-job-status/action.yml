@@ -1,0 +1,22 @@
+name: 'Set Async GitHub Workflow Job Status'
+description: 'Set github actions workflow job status as success or failure based on kafka event message'
+inputs:
+  kafka_broker:
+    description: 'bootstrap server url with port <12.34.56.78:9092>'
+    required: true
+  topic_name:
+    description: 'topic name that listener subscribes to'
+    required: true
+  job_id:
+    description: 'action-input `job_id` should match message-value.job_id to determine job status from message-value.job_status. message-value={"job_id":"123","job_status":"SUCCESS"||"FAILED"}'
+    required: true
+  listener_timeout:
+    description: 'time in minutes for which listener will be actively waiting for target message'
+    required: false
+    default: 10
+runs:
+  using: 'node20'
+  main: 'index.js'
+branding:
+  icon: 'check-circle'
+  color: 'green'
