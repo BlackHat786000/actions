@@ -1,0 +1,26 @@
+name: Demo workflow to set async job status based on event
+
+on:
+  repository_dispatch:
+    types: [async-job]
+
+jobs:
+  set_aync_job_status:
+    runs-on: ubuntu-latest
+    name: async_job
+    steps:
+      - name: Generate random job ID
+        id: random_job_id
+        run: echo "::set-output name=job_id::$(shuf -i 1-100000 -n 1)" # Generates a random number between 1 and 100000
+      
+      - name: Print random job ID
+        run: echo "Random job ID is ${{ steps.random_job_id.outputs.job_id }}"
+      
+      - name: Set async job status step
+        id: async_step
+        uses: BlackHat786000/set-async-job-status@v1.0
+        with:
+          kafka_broker: '13.235.86.169:9092'
+          topic_name: 'myFirstJsonTopic'
+          job_id: ${{ steps.random_job_id.outputs.job_id }}
+          listener_timeout: 5
