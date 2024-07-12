@@ -1,5 +1,5 @@
 const core = require('@actions/core');
-const Kafka = require('no-kafka');
+const { Kafka } = require('kafkajs');
 
 let kafka_broker, topic_name, job_id, listener_timeout, authentication, sasl_username, sasl_password;
 
@@ -37,19 +37,34 @@ try {
   process.exit(1);
 }
 
-const consumerConfig = {
-  connectionString: `kafka://${kafka_broker}`
+const kafkaConfig = {
+  brokers: [kafka_broker],
 };
 
 if (authentication && authentication.toUpperCase() === 'SASL/PLAIN') {
-  consumerConfig.sasl = {
+  kafkaConfig.sasl = {
     mechanism: 'plain',
     username: sasl_username,
-    password: sasl_password
+    password: sasl_password,
   };
+  kafkaConfig.ssl = true; // KafkaJS requires SSL to be enabled for SASL
 }
 
-const consumer = new Kafka.SimpleConsumer(consumerConfig);
+const kafka = new Kafka(kafkaConfig);
+const consumer = kafka.consumer({ groupId: 'my-group' });
+
+async function run() {
+  await consumer.connect();
+  await consumer.subscribe({ topic: topic_name, fromBeginning: false });
+
+  await consumer.run({
+    eachMessage: async ({ topic, partition, message }) => {
+      const value = message.value.toString('utf8');
+      console.log('[DEBUG]', topic, partition, message.offset, value);
+      processMessage(value);
+    },
+  });
+}
 
 function processMessage(message) {
   try {
@@ -69,22 +84,12 @@ function processMessage(message) {
   }
 }
 
-const dataHandler = function (messageSet, topic, partition) {
-  messageSet.forEach(function (m) {
-    const value = m.message.value.toString('utf8');
-    console.log('[DEBUG]', topic, partition, m.offset, value);
-    processMessage(value);
-  });
-};
-
-consumer.init().then(function () {
-  return consumer.subscribe(topic_name, dataHandler);
-}).catch(function (error) {
-  core.setFailed(`[ERROR] Error while subscribing to topic: ${error.message}`);
+run().catch(error => {
+  core.setFailed(`[ERROR] Error while running the consumer: ${error}`);
   process.exit(1);
 });
 
-setTimeout(function () {
+setTimeout(() => {
   console.log(`[INFO] Listener timed out while waiting for ${listener_timeout} minutes for target message, marked current running job status as FAILED.`);
   process.exit(1);
 }, listener_timeout * 60 * 1000);
