@@ -1,5 +1,6 @@
 const core = require('@actions/core');
 const { Kafka } = require('kafkajs');
+const { v4: uuidv4 } = require('uuid');
 
 let kafka_broker, topic_name, job_id, listener_timeout, authentication, sasl_username, sasl_password;
 
@@ -85,7 +86,7 @@ function processMessage(message) {
 }
 
 run().catch(error => {
-  core.setFailed(`[ERROR] Error while running the consumer: ${error}`);
+  core.setFailed(`[ERROR] Error while running the consumer: ${error.message}`);
   process.exit(1);
 });
 
