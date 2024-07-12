@@ -80,7 +80,7 @@ const dataHandler = function (messageSet, topic, partition) {
 consumer.init().then(function () {
   return consumer.subscribe(topic_name, dataHandler);
 }).catch(function (error) {
-  core.setFailed(`[ERROR] Error while subscribing to topic: ${error.message}`);
+  core.setFailed(`[ERROR] Error while subscribing to topic: ${error}`);
   process.exit(1);
 });
 
