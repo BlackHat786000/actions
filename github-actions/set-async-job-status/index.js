@@ -47,7 +47,7 @@ if (authentication && authentication.toUpperCase() === 'SASL/PLAIN') {
     username: sasl_username,
     password: sasl_password,
   };
-  kafkaConfig.ssl = true; // KafkaJS requires SSL to be enabled for SASL
+  kafkaConfig.ssl = false;
 }
 
 const kafka = new Kafka(kafkaConfig);
