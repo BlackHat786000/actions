@@ -1,8 +1,8 @@
 name: 'Set Async GitHub Workflow Job Status'
-description: 'Set github actions workflow job status as success or failure based on kafka event message'
+description: 'Set GitHub Actions workflow job status as success or failure based on Kafka event message'
 inputs:
   kafka_broker:
-    description: 'bootstrap server url with port <12.34.56.78:9092>'
+    description: 'bootstrap server URL with port <12.34.56.78:9092>'
     required: true
   topic_name:
     description: 'topic name that listener subscribes to'
@@ -14,6 +14,15 @@ inputs:
     description: 'time in minutes for which listener will be actively waiting for target message'
     required: false
     default: 10
+  authentication:
+    description: 'authentication mechanism (e.g., SASL/PLAIN)'
+    required: false
+  sasl_username:
+    description: 'SASL username for authentication'
+    required: false
+  sasl_password:
+    description: 'SASL password for authentication'
+    required: false
 runs:
   using: 'node20'
   main: 'index.js'
