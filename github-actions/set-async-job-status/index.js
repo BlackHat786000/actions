@@ -13,7 +13,7 @@ try {
     job_id = core.getInput('job_id');
     listener_timeout = parseInt(core.getInput('listener_timeout'), 10);
     security_protocol = core.getInput('security_protocol');
-    ssl_enabled = core.getInput('ssl_enabled');
+    ssl_enabled = core.getInput('ssl_enabled') === 'true';
 
     if (!kafka_broker || !topic_name || !job_id) {
         throw new Error('kafka_broker, topic_name, and job_id are mandatory action inputs and cannot be empty.');
@@ -47,6 +47,10 @@ if (security_protocol && security_protocol.toUpperCase() === 'SASL_PLAINTEXT') {
 if (ssl_enabled) {
     ca_path = core.getInput('ca_path');
     if (ca_path) {
+		if (!fs.existsSync(ca_path)) {
+            core.setFailed(`[ERROR] Error while reading ca-certs: CA certificate file does not exist at '${ca_path}'`);
+			process.exit(1);
+        }
         kafkaConfig.ssl = {
             rejectUnauthorized: false,
             ca: [fs.readFileSync(ca_path, 'utf-8')],
