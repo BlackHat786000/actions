@@ -101,9 +101,11 @@ function processMessage(message) {
     if (parsedMessage.job_id === job_id) {
       if (parsedMessage.job_status === "SUCCESS") {
         console.log("[INFO] Marked current running job status as SUCCESS.");
+        await cleanup();
         process.exit(0);
       } else if (parsedMessage.job_status === "FAILED") {
         console.log("[INFO] Marked current running job status as FAILED.");
+        await cleanup();
         process.exit(1);
       }
     }
@@ -120,12 +122,17 @@ run().catch(error => {
 
 setTimeout(() => {
   console.log(`[INFO] Listener timed out while waiting for ${listener_timeout} minutes for target message, marked current running job status as FAILED.`);
+  await cleanup();
   process.exit(1);
 }, listener_timeout * 60 * 1000);
 
-// Gracefully shut down consumer on SIGTERM
-process.on('SIGTERM', async () => {
-  await consumer.disconnect();
-  console.log('Consumer has been disconnected.');
-  process.exit(0);
-});
+// Function to handle cleanup before exiting
+async function cleanup() {
+  try {
+    await consumer.disconnect();
+    console.log('Consumer has been disconnected.');
+  } catch (error) {
+    console.error('Error disconnecting Kafka consumer:', error);
+  }
+}
+
