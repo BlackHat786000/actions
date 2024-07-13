@@ -18,7 +18,7 @@ jobs:
       
       - name: Set async job status step
         id: async_step
-        uses: BlackHat786000/actions/github-actions/set-async-job-status@98d5a7a2c48140ee3444f4a69402239de29283b9
+        uses: BlackHat786000/actions/github-actions/set-async-job-status@81cb742e5bf1cd6319775c3662fb2532185856f2
         with:
           kafka_broker: 'ec2-3-110-37-170.ap-south-1.compute.amazonaws.com:9092'
           authentication: 'SASL/PLAIN'
