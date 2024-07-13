@@ -29,6 +29,5 @@ jobs:
           security_protocol: 'SASL_PLAINTEXT'
           sasl_username: 'admin'
           sasl_password: 'admin-secret'
-          ssl_enabled: true
           ca_path: ${{ github.workspace }}/ca-certs/ca-cert.crt
           listener_timeout: 5
