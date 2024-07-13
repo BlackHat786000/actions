@@ -50,7 +50,7 @@ if (authentication && authentication.toUpperCase() === 'SASL/PLAIN') {
   };
   kafkaConfig.ssl = true;
   kafkaConfig.ssl = {
-    rejectUnauthorized: true,
+    rejectUnauthorized: false,
     ca: [
       `-----BEGIN CERTIFICATE-----
       MIID5TCCAs2gAwIBAgIUdj0KhB6OfYslmL0agKHNiDJgkQ0wDQYJKoZIhvcNAQEL
