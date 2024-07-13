@@ -57,8 +57,8 @@ with:
   - **Default:** false
 
 - **`ca_path`**:
-  - **Description:** Path to the CA certificate file for SSL connection.
-  - **Required:** Only if ssl_enabled is set to true and listener needs to authenticate the Kafka broker during SSL/TLS handshake
+  - **Description:** PEM formatted file that contains a CA certificate to be used for validation
+  - **Required:** No
 
 ### Kafka Message Format
 

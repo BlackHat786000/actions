@@ -28,7 +28,7 @@ inputs:
     required: false
     default: false
   ca_path:
-    description: 'Path to CA certificate for SSL'
+    description: 'PEM formatted file that contains a CA certificate to be used for validation'
     required: false
 runs:
   using: 'node20'
