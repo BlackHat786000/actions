@@ -91,13 +91,13 @@ async function run() {
       const value = message.value.toString('utf8');
       console.log('[DEBUG]', topic, partition, message.offset, value);
       try {
-    const parsedMessage = JSON.parse(message);
-    if (parsedMessage.job_id === job_id) {
-      if (parsedMessage.job_status === "SUCCESS") {
-        console.log("[INFO] Marked current running job status as SUCCESS.");
-        await consumer.disconnect();
-        console.log('Consumer has been disconnected.');
-        process.exit(0);
+        const parsedMessage = JSON.parse(value);
+        if (parsedMessage.job_id === job_id) {
+          if (parsedMessage.job_status === "SUCCESS") {
+            console.log("[INFO] Marked current running job status as SUCCESS.");
+            await consumer.disconnect();
+            console.log('Consumer has been disconnected.');
+            process.exit(0);
       } else if (parsedMessage.job_status === "FAILED") {
         console.log("[INFO] Marked current running job status as FAILED.");
         await consumer.disconnect();
