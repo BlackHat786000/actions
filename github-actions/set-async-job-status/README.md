@@ -38,6 +38,28 @@ with:
   - **Required:** No
   - **Default:** 10
 
+- **`security_protocol`**:
+  - **Description:** Specifies the security protocol used to communicate with the Kafka broker.
+  - **Required:** No
+  - **Default:** PLAINTEXT
+
+- **`sasl_username`**:
+  - **Description:** Username for SASL authentication.
+  - **Required:** Only if security_protocol is set to `SASL_PLAINTEXT`
+
+- **`sasl_password`**:
+  - **Description:** Password corresponding to the SASL username.
+  - **Required:** Only if security_protocol is set to `SASL_PLAINTEXT`
+
+- **`ssl_enabled`**:
+  - **Description:** Enable SSL connection to Kafka broker.
+  - **Required:** No
+  - **Default:** false
+
+- **`ca_path`**:
+  - **Description:** Path to the CA certificate file for SSL connection.
+  - **Required:** Only if ssl_enabled is set to true and listener needs to authenticate the Kafka broker during SSL/TLS handshake
+
 ### Kafka Message Format
 
 The messages sent to the Kafka topic should be in JSON format and contain at least the following two key-value pairs:
