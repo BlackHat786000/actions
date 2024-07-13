@@ -4,7 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 
 let kafka_broker, topic_name, job_id, listener_timeout;
-let security_protocol, sasl_username, sasl_password;
+let authentication, sasl_username, sasl_password;
 let ssl_enabled, ca_path;
 
 try {
@@ -12,18 +12,18 @@ try {
     topic_name = core.getInput('topic_name');
     job_id = core.getInput('job_id');
     listener_timeout = parseInt(core.getInput('listener_timeout'), 10);
-    security_protocol = core.getInput('security_protocol');
+    authentication = core.getInput('authentication');
     ssl_enabled = core.getInput('ssl_enabled') === 'true';
 
     if (!kafka_broker || !topic_name || !job_id) {
         throw new Error('kafka_broker, topic_name, and job_id are mandatory action inputs and cannot be empty.');
     }
 
-    if (security_protocol && security_protocol.toUpperCase() === 'SASL_PLAINTEXT') {
+    if (authentication && authentication.toUpperCase() === 'SASL PLAIN') {
         sasl_username = core.getInput('sasl_username');
         sasl_password = core.getInput('sasl_password');
         if (!sasl_username || !sasl_password) {
-            throw new Error('sasl_username and sasl_password are mandatory when security_protocol is set to SASL_PLAINTEXT.');
+            throw new Error('sasl_username and sasl_password are mandatory when authentication is set to SASL PLAIN.');
         }
     }
 } catch (error) {
@@ -36,7 +36,7 @@ const kafkaConfig = {
     ssl: ssl_enabled
 };
 
-if (security_protocol && security_protocol.toUpperCase() === 'SASL_PLAINTEXT') {
+if (authentication && authentication.toUpperCase() === 'SASL PLAIN') {
     kafkaConfig.sasl = {
         mechanism: 'plain',
         username: sasl_username,

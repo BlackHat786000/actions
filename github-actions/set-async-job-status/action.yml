@@ -14,8 +14,8 @@ inputs:
     description: 'Time in minutes for which listener will be actively waiting for target message'
     required: false
     default: 10
-  security_protocol:
-    description: 'Authentication mechanism (e.g., SASL_PLAINTEXT)'
+  authentication:
+    description: 'Authentication mechanism (e.g., SASL PLAIN)'
     required: false
   sasl_username:
     description: 'SASL username for authentication'
