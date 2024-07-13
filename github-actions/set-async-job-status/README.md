@@ -58,14 +58,14 @@ with:
 
 - **`ca_path`**:
   - **Description:** PEM formatted file that contains a CA certificate to be used for validation
-  - **Required:** No
+  - **Required:** Only if ssl_enabled is set to true and listener can't authenticate kafka broker due to self-signed certificate in certificate chain
 
 ### Kafka Message Format
 
 The messages sent to the Kafka topic should be in JSON format and contain at least the following two key-value pairs:
 
 - **`job_id`**: Represents the unique identifier of the job within the GitHub Actions workflow.
-- **`job_status`**: Indicates the status of the job, which could be either "SUCCESS" or "FAILED".
+- **`job_status`**: Indicates the status of the job, which could be either `SUCCESS` or `FAILED`.
 
 Example message:
 ```json
