@@ -122,3 +122,10 @@ setTimeout(() => {
   console.log(`[INFO] Listener timed out while waiting for ${listener_timeout} minutes for target message, marked current running job status as FAILED.`);
   process.exit(1);
 }, listener_timeout * 60 * 1000);
+
+// Gracefully shut down consumer on SIGTERM
+process.on('SIGTERM', async () => {
+  await consumer.disconnect();
+  console.log('Consumer has been disconnected.');
+  process.exit(0);
+});
