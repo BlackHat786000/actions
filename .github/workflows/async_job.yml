@@ -20,7 +20,7 @@ jobs:
         id: async_step
         uses: BlackHat786000/actions/github-actions/set-async-job-status@8faf0f033cb740462109381ec1fbd584cc9845c4
         with:
-          kafka_broker: '3.110.37.170:9092'
+          kafka_broker: 'ec2-3-110-37-170.ap-south-1.compute.amazonaws.com:9092'
           authentication: 'SASL/PLAIN'
           sasl_username: 'admin'
           sasl_password: 'admin-secret'
