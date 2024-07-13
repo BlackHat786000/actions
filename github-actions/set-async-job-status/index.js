@@ -90,7 +90,25 @@ async function run() {
     eachMessage: async ({ topic, partition, message }) => {
       const value = message.value.toString('utf8');
       console.log('[DEBUG]', topic, partition, message.offset, value);
-      processMessage(value);
+      try {
+    const parsedMessage = JSON.parse(message);
+    if (parsedMessage.job_id === job_id) {
+      if (parsedMessage.job_status === "SUCCESS") {
+        console.log("[INFO] Marked current running job status as SUCCESS.");
+        await consumer.disconnect();
+        console.log('Consumer has been disconnected.');
+        process.exit(0);
+      } else if (parsedMessage.job_status === "FAILED") {
+        console.log("[INFO] Marked current running job status as FAILED.");
+        await consumer.disconnect();
+        console.log('Consumer has been disconnected.');
+        process.exit(1);
+      }
+    }
+  } catch (error) {
+    core.setFailed(`[ERROR] Error while processing message: ${error.message}`);
+    process.exit(1);
+  }
     },
   });
 }
@@ -101,11 +119,9 @@ function processMessage(message) {
     if (parsedMessage.job_id === job_id) {
       if (parsedMessage.job_status === "SUCCESS") {
         console.log("[INFO] Marked current running job status as SUCCESS.");
-        cleanup();
         process.exit(0);
       } else if (parsedMessage.job_status === "FAILED") {
         console.log("[INFO] Marked current running job status as FAILED.");
-        cleanup();
         process.exit(1);
       }
     }
@@ -122,17 +138,5 @@ run().catch(error => {
 
 setTimeout(() => {
   console.log(`[INFO] Listener timed out while waiting for ${listener_timeout} minutes for target message, marked current running job status as FAILED.`);
-  cleanup();
   process.exit(1);
 }, listener_timeout * 60 * 1000);
-
-// Function to handle cleanup before exiting
-function cleanup() {
-  consumer.disconnect().then(() => {
-    console.log('Consumer has been disconnected.');
-    process.exit(0);
-  }).catch(error => {
-    console.error('Error disconnecting Kafka consumer:', error);
-    process.exit(1);
-  });
-}
