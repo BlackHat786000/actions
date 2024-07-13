@@ -9,6 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     name: async_job
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
       - name: Generate random job ID
         id: random_job_id
         run: echo "::set-output name=job_id::$(shuf -i 1-100000 -n 1)" # Generates a random number between 1 and 100000
@@ -18,12 +21,13 @@ jobs:
       
       - name: Set async job status step
         id: async_step
-        uses: BlackHat786000/actions/github-actions/set-async-job-status@f66aa2d69b487f6d5c7f68d8ec1d78633147f612
+        uses: BlackHat786000/actions/github-actions/set-async-job-status@755a667625bbd2b78c05fbc399cb288f74503556
         with:
           kafka_broker: 'ec2-3-110-37-170.ap-south-1.compute.amazonaws.com:9092'
-          authentication: 'SASL/PLAIN'
+          security_protocol: 'SASL_PLAINTEXT'
           sasl_username: 'admin'
           sasl_password: 'admin-secret'
-          topic_name: 'myFirstJsonTopic'
+          ssl_enabled: true
+          ca_path: ${{ github.workspace }}/ca-certs/ca-cert.crt
           job_id: ${{ steps.random_job_id.outputs.job_id }}
           listener_timeout: 5
