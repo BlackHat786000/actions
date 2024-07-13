@@ -58,7 +58,7 @@ with:
 
 - **`ca_path`**:
   - **Description:** PEM formatted file that contains a CA certificate to be used for validation
-  - **Required:** Only if ssl_enabled is set to true and listener can't authenticate kafka broker due to self-signed certificate in certificate chain
+  - **Required:** Only if ssl_enabled is set to true
 
 ### Kafka Message Format
 
