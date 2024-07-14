@@ -52,7 +52,7 @@ if (ssl_enabled) {
 			process.exit(1);
         }
         kafkaConfig.ssl = {
-            rejectUnauthorized: false,
+            rejectUnauthorized: true,
             ca: [fs.readFileSync(ca_path, 'utf-8')],
         };
     }
