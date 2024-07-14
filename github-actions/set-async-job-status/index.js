@@ -33,7 +33,7 @@ try {
             throw new Error('ca_path is mandatory when ssl_enabled is set to true.');
         }
         if (!fs.existsSync(ca_path)) {
-            throw new Error(`CA certificate file does not exist at '${ca_path}'`);
+            throw new Error(`ca certificate file does not exist at path '${ca_path}'`);
         }
     }
 
