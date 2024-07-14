@@ -11,7 +11,7 @@ Create a workflow *.yml file in your repositories .github/workflows directory.
 ### Example Usage
 
 ```yaml
-uses: BlackHat786000/set-async-job-status@v1.0
+uses: BlackHat786000/set-async-job-status@v2.0
 with:
   kafka_broker: '12.34.56.78:9092'
   topic_name: 'myJsonTopic'
