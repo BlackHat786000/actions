@@ -5,7 +5,7 @@ on:
     types: [async-job]
 
 jobs:
-  set_aync_job_status:
+  set_async_job_status:
     runs-on: ubuntu-latest
     name: async_job
     steps:
@@ -18,6 +18,11 @@ jobs:
       
       - name: Print random job ID
         run: echo "Random job ID is ${{ steps.random_job_id.outputs.job_id }}"
+
+      - name: Install CA certificate into truststore
+        run: |
+          sudo cp ${{ github.workspace }}/ca-certs/ca-cert.crt /usr/local/share/ca-certificates/ca-cert.crt
+          sudo update-ca-certificates
       
       - name: Set async job status step
         id: async_step
@@ -30,5 +35,4 @@ jobs:
           sasl_username: 'admin'
           sasl_password: 'admin-secret'
           ssl_enabled: true
-          ca_path: ${{ github.workspace }}/ca-certs/ca-cert.crt
           listener_timeout: 5
