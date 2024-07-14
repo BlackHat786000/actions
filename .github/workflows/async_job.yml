@@ -35,5 +35,4 @@ jobs:
           sasl_username: 'admin'
           sasl_password: 'admin-secret'
           ssl_enabled: true
-          ca_path: /usr/local/share/ca-certificates/ca-cert.crt
           listener_timeout: 5
