@@ -29,12 +29,12 @@ try {
 
     if (ssl_enabled) {
         ca_path = core.getInput('ca_path');
-        if (!ca_path) {
-            throw new Error('ca_path is mandatory when ssl_enabled is set to true.');
-        }
-        if (!fs.existsSync(ca_path)) {
-            throw new Error(`ca certificate file does not exist at path '${ca_path}'`);
-        }
+        // if (!ca_path) {
+        //     throw new Error('ca_path is mandatory when ssl_enabled is set to true.');
+        // }
+        // if (!fs.existsSync(ca_path)) {
+        //     throw new Error(`ca certificate file does not exist at path '${ca_path}'`);
+        // }
 
         client_cert = core.getInput('client_cert');
         client_key = core.getInput('client_key');
@@ -54,12 +54,13 @@ try {
 
 const kafkaConfig = {
     brokers: [kafka_broker],
-    ssl: ssl_enabled ? {
-        rejectUnauthorized: false,
-        ca: [fs.readFileSync(ca_path, 'utf-8')],
-        cert: client_cert ? fs.readFileSync(client_cert, 'utf-8') : undefined,
-        key: client_key ? fs.readFileSync(client_key, 'utf-8') : undefined,
-    } : false
+    ssl: ssl_enabled
+    // ssl: ssl_enabled ? {
+    //     rejectUnauthorized: false,
+    //     ca: [fs.readFileSync(ca_path, 'utf-8')],
+    //     cert: client_cert ? fs.readFileSync(client_cert, 'utf-8') : undefined,
+    //     key: client_key ? fs.readFileSync(client_key, 'utf-8') : undefined,
+    // } : false
 };
 
 if (authentication && authentication.toUpperCase() === 'SASL PLAIN') {
