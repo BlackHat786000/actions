@@ -37,6 +37,4 @@ jobs:
           authentication: 'SASL PLAIN'
           sasl_username: 'admin'
           sasl_password: 'admin-secret'
-          ssl_enabled: true
-          ca_path: /usr/local/share/ca-certificates/ca-cert.cr
           listener_timeout: 5
