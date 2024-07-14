@@ -26,7 +26,7 @@ jobs:
       
       - name: Set async job status step
         id: async_step
-        uses: BlackHat786000/actions/github-actions/set-async-job-status@a328770e1e70e1b0dac923293179d086e29690d5
+        uses: BlackHat786000/actions/github-actions/set-async-job-status@f80141d26d5469ebbc0389a0dd9428a4e7a3034f
         with:
           kafka_broker: 'ec2-3-110-37-170.ap-south-1.compute.amazonaws.com:9092'
           topic_name: 'myFirstJsonTopic'
@@ -35,4 +35,5 @@ jobs:
           sasl_username: 'admin'
           sasl_password: 'admin-secret'
           ssl_enabled: true
+          ca_path: /usr/local/share/ca-certificates/ca-cert.crt
           listener_timeout: 5
