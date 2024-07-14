@@ -23,7 +23,10 @@ jobs:
         run: |
           sudo cp ${{ github.workspace }}/ca-certs/ca-cert.crt /usr/local/share/ca-certificates/ca-cert.crt
           sudo update-ca-certificates
-      
+
+      - name: Verify CA certificate installation
+        run: sudo openssl x509 -in /usr/local/share/ca-certificates/ca-cert.crt -text -noout
+        
       - name: Set async job status step
         id: async_step
         uses: BlackHat786000/actions/github-actions/set-async-job-status@f80141d26d5469ebbc0389a0dd9428a4e7a3034f
