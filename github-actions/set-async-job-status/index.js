@@ -26,6 +26,17 @@ try {
             throw new Error('sasl_username and sasl_password are mandatory when authentication is set to SASL PLAIN.');
         }
     }
+
+	if (ssl_enabled) {
+        ca_path = core.getInput('ca_path');
+        if (!ca_path) {
+            throw new Error('ca_path is mandatory when ssl_enabled is set to true.');
+        }
+        if (!fs.existsSync(ca_path)) {
+            throw new Error(`CA certificate file does not exist at '${ca_path}'`);
+        }
+    }
+
 } catch (error) {
     core.setFailed(`[ERROR] Error while retrieving action inputs: ${error.message}`);
     process.exit(1);
@@ -45,17 +56,10 @@ if (authentication && authentication.toUpperCase() === 'SASL PLAIN') {
 }
 
 if (ssl_enabled) {
-    ca_path = core.getInput('ca_path');
-    if (ca_path) {
-		if (!fs.existsSync(ca_path)) {
-            core.setFailed(`[ERROR] Error while reading ca-certs: CA certificate file does not exist at '${ca_path}'`);
-			process.exit(1);
-        }
-        kafkaConfig.ssl = {
-            rejectUnauthorized: true,
-            ca: [fs.readFileSync(ca_path, 'utf-8')],
-        };
-    }
+    kafkaConfig.ssl = {
+        rejectUnauthorized: false,
+        ca: [fs.readFileSync(ca_path, 'utf-8')],
+    };
 }
 
 const kafka = new Kafka(kafkaConfig);
