@@ -41,7 +41,7 @@ with:
 - **`authentication`**:
   - **Description:** Specifies the security protocol used to communicate with the Kafka broker.
   - **Required:** No
-  - **Default:** PLAINTEXT
+  - **Default:** None
 
 - **`sasl_username`**:
   - **Description:** Username for SASL authentication.
