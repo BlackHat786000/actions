@@ -17,6 +17,13 @@ with:
   topic_name: 'myJsonTopic'
   job_id: '123456'
   listener_timeout: 5
+  authentication: 'SASL PLAIN'
+  sasl_username: 'username'
+  sasl_password: 'password'
+  ssl_enabled: true
+  ca_path: '/my/custom/ca.crt'
+  client_cert: '/my/custom/client-cert.pem'
+  client_key: '/my/custom/client-key.pem'
 ```
 
 ### Inputs
