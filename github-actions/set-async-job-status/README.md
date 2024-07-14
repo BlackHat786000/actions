@@ -60,6 +60,14 @@ with:
   - **Description:** PEM formatted file that contains a CA certificate to be used for validation
   - **Required:** Only if ssl_enabled is set to true
 
+- **`client_cert`**:
+  - **Description:** PEM formatted certificate chain file to be used for SSL client authentication
+  - **Required:** No
+
+- **`client_key`**:
+  - **Description:** PEM formatted file that contains your private key to be used for SSL client authentication
+  - **Required:** No
+
 ### Kafka Message Format
 
 The messages sent to the Kafka topic should be in JSON format and contain at least the following two key-value pairs:

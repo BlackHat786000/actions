@@ -30,6 +30,12 @@ inputs:
   ca_path:
     description: 'PEM formatted file that contains a CA certificate to be used for validation'
     required: false
+  client_cert:
+    description: 'PEM formatted certificate chain file to be used for SSL client authentication'
+    required: false
+  client_key:
+    description: 'PEM formatted file that contains your private key to be used for SSL client authentication'
+    required: false
 runs:
   using: 'node20'
   main: 'index.js'

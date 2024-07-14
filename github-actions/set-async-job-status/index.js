@@ -5,7 +5,7 @@ const fs = require('fs');
 
 let kafka_broker, topic_name, job_id, listener_timeout;
 let authentication, sasl_username, sasl_password;
-let ssl_enabled, ca_path;
+let ssl_enabled, ca_path, client_cert, client_key;
 
 try {
     kafka_broker = core.getInput('kafka_broker');
@@ -27,7 +27,7 @@ try {
         }
     }
 
-	if (ssl_enabled) {
+    if (ssl_enabled) {
         ca_path = core.getInput('ca_path');
         if (!ca_path) {
             throw new Error('ca_path is mandatory when ssl_enabled is set to true.');
@@ -35,8 +35,18 @@ try {
         if (!fs.existsSync(ca_path)) {
             throw new Error(`ca certificate file does not exist at path '${ca_path}'`);
         }
-    }
 
+        client_cert = core.getInput('client_cert');
+        client_key = core.getInput('client_key');
+
+        if (client_cert && !fs.existsSync(client_cert)) {
+            throw new Error(`client certificate file does not exist at path '${client_cert}'`);
+        }
+
+        if (client_key && !fs.existsSync(client_key)) {
+            throw new Error(`client key file does not exist at path '${client_key}'`);
+        }
+    }
 } catch (error) {
     core.setFailed(`[ERROR] Error while retrieving action inputs: ${error.message}`);
     process.exit(1);
@@ -44,7 +54,12 @@ try {
 
 const kafkaConfig = {
     brokers: [kafka_broker],
-    ssl: ssl_enabled
+    ssl: ssl_enabled ? {
+        rejectUnauthorized: false,
+        ca: [fs.readFileSync(ca_path, 'utf-8')],
+        cert: client_cert ? fs.readFileSync(client_cert, 'utf-8') : undefined,
+        key: client_key ? fs.readFileSync(client_key, 'utf-8') : undefined,
+    } : false
 };
 
 if (authentication && authentication.toUpperCase() === 'SASL PLAIN') {
@@ -52,13 +67,6 @@ if (authentication && authentication.toUpperCase() === 'SASL PLAIN') {
         mechanism: 'plain',
         username: sasl_username,
         password: sasl_password,
-    };
-}
-
-if (ssl_enabled) {
-    kafkaConfig.ssl = {
-        rejectUnauthorized: false,
-        ca: [fs.readFileSync(ca_path, 'utf-8')],
     };
 }
 
