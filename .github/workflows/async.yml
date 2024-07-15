@@ -31,12 +31,11 @@ jobs:
         id: async_step
         uses: BlackHat786000/set-async-job-status@c0397e441fd3ab0de0f73ab084c867b5ee137200
         with:
-          kafka_broker: 'ec2-3-110-37-170.ap-south-1.compute.amazonaws.com:9094'
+          kafka_broker: '3.110.37.170:9094'
           topic_name: 'myFirstJsonTopic'
           job_id: ${{ steps.random_job_id.outputs.job_id }}
           authentication: 'SASL PLAIN'
           sasl_username: 'admin'
           sasl_password: 'admin-secret'
           ssl_enabled: true
-          ca_path: /usr/local/share/ca-certificates/ca-cert.crt
           listener_timeout: 5
