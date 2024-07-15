@@ -31,7 +31,7 @@ jobs:
         id: async_step
         uses: BlackHat786000/set-async-job-status@91f6e6959599a06f3d6eb1ff8145b7dc64ea7db8
         with:
-          kafka_broker: 'ec2-3-110-37-170.ap-south-1.compute.amazonaws.com:9092'
+          kafka_broker: 'ec2-3-110-37-170.ap-south-1.compute.amazonaws.com:9094'
           topic_name: 'myFirstJsonTopic'
           job_id: ${{ steps.random_job_id.outputs.job_id }}
           authentication: 'SASL PLAIN'
