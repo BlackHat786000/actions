@@ -54,13 +54,13 @@ try {
 
 const kafkaConfig = {
     brokers: [kafka_broker],
-    ssl: ssl_enabled
-    // ssl: ssl_enabled ? {
-    //     rejectUnauthorized: false,
+    // ssl: ssl_enabled
+    ssl: ssl_enabled ? {
+         rejectUnauthorized: false,
     //     ca: [fs.readFileSync(ca_path, 'utf-8')],
     //     cert: client_cert ? fs.readFileSync(client_cert, 'utf-8') : undefined,
     //     key: client_key ? fs.readFileSync(client_key, 'utf-8') : undefined,
-    // } : false
+     } : false
 };
 
 if (authentication && authentication.toUpperCase() === 'SASL PLAIN') {
