@@ -34,7 +34,7 @@ jobs:
       if: matrix.job.register_output != ''
       run: |
         echo "Registered Output:"
-        echo "${{ matrix.job.register_output }}=${{ steps.register_output.outputs[matrix.job.register_output] }}"
+        echo "${{ matrix.job.register_output }}=${{ steps.register_output.outputs[matrix.job.register_output][id] }}"
 
     - name: Call rest end-point step
       uses: fjogeleit/http-request-action@v1
