@@ -14,6 +14,7 @@ jobs:
       max-parallel: 1
     steps:
     - name: ${{ matrix.job.name }}
+      id: ${{ matrix.job.name }}
       uses: jenseng/dynamic-uses@v1
       with:
         # Use expressions to dynamically specify the action
