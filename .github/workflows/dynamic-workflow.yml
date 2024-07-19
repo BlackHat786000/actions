@@ -30,4 +30,4 @@ jobs:
 
     - name: Print Output
       run: |
-        echo "Output for job '${{ matrix.job.name }}': ${{ steps.register-output.outputs[matrix.job.register_output] }}"
+        echo "Output for job '${{ matrix.job.name }}': ${{ steps.register-output.outputs[matrix.job.register_output] }}" | jq .
