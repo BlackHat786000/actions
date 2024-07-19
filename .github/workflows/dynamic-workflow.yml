@@ -34,10 +34,10 @@ jobs:
       if: matrix.job.register_output != ''
       run: |
         echo "Registered Output:"
-        echo "${{ matrix.job.register_output }}=${{ steps.register_output.outputs[matrix.job.register_output][id] }}"
+        echo "${{ matrix.job.register_output }}=${{ steps.register_output.outputs[matrix.job.register_output] }}"
 
     - name: Call rest end-point step
       uses: fjogeleit/http-request-action@v1
       with:
-        url: "https://jsonplaceholder.typicode.com/posts/${{ steps.register_output.outputs[matrix.job.register_output] }}"
+        url: "https://jsonplaceholder.typicode.com/posts/${{ steps.register_output.outputs[matrix.job.register_output]['id'] }}"
         method: "GET"
