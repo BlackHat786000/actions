@@ -28,3 +28,9 @@ jobs:
     - name: Register Output
       if: matrix.job.register_output != ''
       run: echo "${{ matrix.job.register_output }}=${{ fromJSON(steps.dynamic-step.outputs.outputs).response }}" >> $GITHUB_OUTPUT
+
+    - name: Print Registered Output
+      if: matrix.job.register_output != ''
+      run: |
+        echo "Registered Output:"
+        echo "${{ matrix.job.register_output }}=${{ env[matrix.job.register_output] }}"
