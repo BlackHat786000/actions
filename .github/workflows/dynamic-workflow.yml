@@ -17,17 +17,6 @@ jobs:
       id: dynamic-step
       uses: jenseng/dynamic-uses@v1
       with:
-        # Use expressions to dynamically specify the action
         uses: ${{ matrix.job.uses }}
-        # Convert `with` to a JSON string
         with: ${{ toJson(matrix.job.with) }}
-
-    - name: Register Output
-      id: register-output
-      run: |
-        # Use the set-output command to define job outputs
-        echo "::set-output name=${{ matrix.job.register_output }}::${{ steps.dynamic-step.outputs }}"
-
-    - name: Print Output
-      run: |
-        echo "${{ steps.register-output.outputs[matrix.job.register_output] }}" | jq .
+        
