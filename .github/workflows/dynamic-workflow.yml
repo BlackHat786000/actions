@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        job: ${{ fromJson(github.event.client_payload.jobs) }}
+        job: ${{ github.event.client_payload.jobs }}
     steps:
     - name: Run dynamic action
       uses: jenseng/dynamic-uses@v1
