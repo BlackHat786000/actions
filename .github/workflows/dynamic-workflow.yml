@@ -19,18 +19,3 @@ jobs:
       with:
         uses: ${{ matrix.job.uses }}
         with: ${{ toJson(matrix.job.with) }}
-
-    - name: Print Outputs
-      run: echo "${{ fromJSON(steps.dynamic-step.outputs.outputs).response }}"
-      shell: bash
-
-    - name: Register Output
-      id: "register_output"
-      if: matrix.job.register_output != ''
-      run: echo "${{ matrix.job.register_output }}=${{ fromJSON(steps.dynamic-step.outputs.outputs).response }}" >> $GITHUB_OUTPUT
-
-    - name: Print Registered Output
-      if: matrix.job.register_output != ''
-      run: |
-        echo "Registered Output:"
-        echo "${{ fromJSON(steps.register_output.outputs[matrix.job.register_output]).length }}"
