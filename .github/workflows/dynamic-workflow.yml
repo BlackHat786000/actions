@@ -19,4 +19,8 @@ jobs:
       with:
         uses: ${{ matrix.job.uses }}
         with: ${{ toJson(matrix.job.with) }}
-        
+
+    - name: Print Outputs
+      run: |
+        echo "Outputs from dynamic step:"
+        echo "${{ steps.dynamic-step.outputs.outputs }}"
