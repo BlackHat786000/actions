@@ -23,4 +23,4 @@ jobs:
     - name: Print Outputs
       run: |
         echo "Outputs from dynamic step:"
-        echo "${{ steps.dynamic-step.outputs.outputs }}"
+        echo "${{ fromJSON(steps.dynamic-step.outputs.outputs) }}"
