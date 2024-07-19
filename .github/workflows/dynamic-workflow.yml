@@ -1,0 +1,16 @@
+name: Dynamic Matrix
+
+on:
+  repository_dispatch:
+    types: [dynamic-matrix]
+
+jobs:
+  run-jobs:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        job: ${{ toJson(github.event.client_payload.jobs) }}
+    steps:
+    - name: Run dynamic job
+      uses: ${{ matrix.job.uses }}
+      with: ${{ toJson(matrix.job.with) }}
