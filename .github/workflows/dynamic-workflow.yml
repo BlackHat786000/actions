@@ -5,7 +5,7 @@ on:
     types: [dynamic-matrix]
 
 jobs:
-  run-jobs:
+  dynamic-job:
     runs-on: ubuntu-latest
     strategy:
       matrix:
