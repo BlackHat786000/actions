@@ -33,4 +33,4 @@ jobs:
       if: matrix.job.register_output != ''
       run: |
         echo "Registered Output:"
-        echo "${{ steps.register_output.outputs[matrix.job.register_output].length }}"
+        echo "${{ fromJSON(steps.register_output.outputs[matrix.job.register_output]).length }}"
