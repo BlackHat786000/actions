@@ -10,6 +10,8 @@ jobs:
     strategy:
       matrix:
         job: ${{ github.event.client_payload.jobs }}
+      fail-fast: true
+      max-parallel: 1
     steps:
     - name: ${{ matrix.job.name }}
       uses: jenseng/dynamic-uses@v1
