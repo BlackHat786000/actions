@@ -7,7 +7,6 @@ on:
 jobs:
   run-jobs:
     runs-on: ubuntu-latest
-    needs: ${{ github.event.client_payload.needs }}
     strategy:
       matrix:
         job: ${{ github.event.client_payload.jobs }}
