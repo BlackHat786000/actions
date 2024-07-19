@@ -23,21 +23,15 @@ jobs:
     - name: Print Outputs
       run: |
         echo "Outputs from dynamic step:"
-        echo "${{ fromJSON(steps.dynamic-step.outputs.outputs.response) }}"
+        echo "${{ fromJSON(steps.dynamic-step.outputs.outputs).response }}"
 
     - name: Register Output
       id: "register_output"
       if: matrix.job.register_output != ''
-      run: echo "${{ matrix.job.register_output }}=${{ fromJSON(steps.dynamic-step.outputs.outputs).response['id'] }}" >> $GITHUB_OUTPUT
+      run: echo "${{ matrix.job.register_output }}=${{ fromJSON(steps.dynamic-step.outputs.outputs).response }}" >> $GITHUB_OUTPUT
 
     - name: Print Registered Output
       if: matrix.job.register_output != ''
       run: |
         echo "Registered Output:"
         echo "${{ matrix.job.register_output }}=${{ steps.register_output.outputs[matrix.job.register_output] }}"
-
-    - name: Call rest end-point step
-      uses: fjogeleit/http-request-action@v1
-      with:
-        url: "https://jsonplaceholder.typicode.com/posts/${{ steps.register_output.outputs[matrix.job.register_output] }}"
-        method: "GET"
