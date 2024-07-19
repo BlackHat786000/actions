@@ -14,10 +14,18 @@ jobs:
       max-parallel: 1
     steps:
     - name: ${{ matrix.job.name }}
-      id: ${{ matrix.job.name }}
+      id: dynamic-step
       uses: jenseng/dynamic-uses@v1
       with:
         # Use expressions to dynamically specify the action
         uses: ${{ matrix.job.uses }}
         # Convert `with` to a JSON string
         with: ${{ toJson(matrix.job.with) }}
+
+    - name: Register Output
+      id: register-output
+      run: echo "${{ matrix.job.register_output }}=${{ steps.dynamic-step.outputs }}" >> $GITHUB_ENV
+    
+    - name: Print Output
+      run: |
+        echo "Output for job '${{ matrix.job.name }}': ${{ env[matrix.job.register_output] }}"
