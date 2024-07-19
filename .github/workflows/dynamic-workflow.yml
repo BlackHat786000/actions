@@ -1,4 +1,4 @@
-name: Dynamic Matrix
+name: Dynamic Action Workflow
 
 on:
   repository_dispatch:
@@ -9,8 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        job: ${{ toJson(github.event.client_payload.jobs) }}
+        job: ${{ fromJson(github.event.client_payload.jobs) }}
     steps:
-    - name: Run dynamic job
-      uses: ${{ matrix.job.uses }}
-      with: ${{ toJson(matrix.job.with) }}
+    - name: Run dynamic action
+      uses: jenseng/dynamic-uses@v1
+      with:
+        # Use expressions to dynamically specify the action
+        uses: ${{ matrix.job.uses }}
+        # Convert `with` to a JSON string
+        with: ${{ toJson(matrix.job.with) }}
