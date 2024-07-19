@@ -25,5 +25,16 @@ jobs:
         echo "Outputs from dynamic step:"
         echo "${{ fromJSON(steps.dynamic-step.outputs.outputs).response }}"
 
-    - name: Register Output
-      run: echo "::set-output name=${{ matrix.job.register_output }}::${{ fromJSON(steps.dynamic-step.outputs.outputs).response }}"
+    - name: Print Outputs
+      id: print-outputs
+      run: |
+        # Extract and print the output from the dynamic step
+        OUTPUTS=$(echo "${{ fromJSON(steps.dynamic-step.outputs.outputs).response }}")
+        echo "Outputs from dynamic step:"
+        echo "$OUTPUTS"
+
+        # Get the key from the client payload
+        KEY=${{ matrix.job.register_output }}
+
+        # Save the value to a key
+        echo "::set-output name=${KEY}::$OUTPUTS"
