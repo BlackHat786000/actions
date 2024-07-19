@@ -26,8 +26,8 @@ jobs:
       id: register-output
       run: |
         # Use the set-output command to define job outputs
-        echo "::set-output name=job_output::${{ toJson(steps.dynamic-step.outputs) }}"
+        echo "::set-output name=${{ matrix.job.register_output }}::${{ steps.dynamic-step.outputs }}"
 
     - name: Print Output
       run: |
-        echo "Output for job '${{ matrix.job.name }}': ${{ steps.register-output.outputs.job_output }}"
+        echo "Output for job '${{ matrix.job.name }}': ${{ steps.register-output.outputs[matrix.job.register_output] }}"
