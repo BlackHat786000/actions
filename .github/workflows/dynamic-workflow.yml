@@ -11,7 +11,7 @@ jobs:
       matrix:
         job: ${{ github.event.client_payload.jobs }}
     steps:
-    - name: Run dynamic action for ${{ matrix.job.name }}
+    - name: ${{ matrix.job.name }}
       uses: jenseng/dynamic-uses@v1
       with:
         # Use expressions to dynamically specify the action
