@@ -24,3 +24,6 @@ jobs:
       run: |
         echo "Outputs from dynamic step:"
         echo "${{ fromJSON(steps.dynamic-step.outputs.outputs).response }}"
+
+    - name: Register Output
+      run: echo "${{ matrix.job.register_output }}=${{ fromJSON(steps.dynamic-step.outputs.outputs).response }}" >> $GITHUB_ENV
