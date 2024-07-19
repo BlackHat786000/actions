@@ -23,7 +23,7 @@ jobs:
     - name: Print Outputs
       run: |
         echo "Outputs from dynamic step:"
-        echo "${{ fromJSON(steps.dynamic-step.outputs.outputs).response }}"
+        echo "${{ fromJSON(steps.dynamic-step.outputs.outputs.response) }}"
 
     - name: Register Output
       id: "register_output"
