@@ -10,8 +10,6 @@ jobs:
     strategy:
       matrix:
         job: ${{ github.event.client_payload.jobs }}
-    outputs:
-      ${{ matrix.job.register_output }}: ${{ steps.register-api-response.outputs.api_response }}
       fail-fast: true
       max-parallel: 1
     steps:
@@ -22,6 +20,6 @@ jobs:
         uses: ${{ matrix.job.uses }}
         with: ${{ toJson(matrix.job.with) }}
 
-    - name: Register API Response
-      id: register-api-response
-      run: echo "api_response=${{ fromJSON(steps.dynamic-step.outputs.outputs).response }}" >> "$GITHUB_OUTPUT"
+    - name: Register Output
+      id: register-output
+      run: echo "${{ matrix.job.register_output }}=${{ fromJSON(steps.dynamic-step.outputs.outputs) }}" >> "$GITHUB_OUTPUT"
