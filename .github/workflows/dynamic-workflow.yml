@@ -22,4 +22,5 @@ jobs:
 
     - name: Register Output
       id: register-output
+      if: matrix.job.register_output != ''
       run: echo "${{ matrix.job.register_output }}=${{ fromJSON(steps.dynamic-step.outputs.outputs) }}" >> "$GITHUB_OUTPUT"
