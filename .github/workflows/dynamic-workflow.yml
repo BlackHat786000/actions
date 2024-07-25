@@ -1,21 +1,10 @@
-name: Dynamic Action Workflow
-
-on:
-  repository_dispatch:
-    types: [dynamic-matrix]
-
+name: Dynamic Workflow
+on: [workflow_dispatch]
 jobs:
   dynamic-job:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        job: ${{ github.event.client_payload.jobs }}
-      fail-fast: true
-      max-parallel: 1
     steps:
-    - name: ${{ matrix.job.name }}
-      id: dynamic-step
-      uses: jenseng/dynamic-uses@v1
-      with:
-        uses: ${{ matrix.job.uses }}
-        with: ${{ toJson(matrix.job.with) }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Print Payload
+        run: echo Object
