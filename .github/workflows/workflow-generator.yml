@@ -35,6 +35,21 @@ jobs:
 
       - uses: actions/checkout@v4
       - run: |
+          echo "name: Dynamic Workflow" > .github/workflows/dynamic-workflow.yml
+          echo "on: [workflow_dispatch]" >> .github/workflows/dynamic-workflow.yml
+          echo "jobs:" >> .github/workflows/dynamic-workflow.yml
+          echo "  dynamic-job:" >> .github/workflows/dynamic-workflow.yml
+          echo "    runs-on: ubuntu-latest" >> .github/workflows/dynamic-workflow.yml
+          echo "    steps:" >> .github/workflows/dynamic-workflow.yml
+          echo "      - name: Checkout repository" >> .github/workflows/dynamic-workflow.yml
+          echo "        uses: actions/checkout@v2" >> .github/workflows/dynamic-workflow.yml
+          
+          # Here you can parse the payload.json and generate the dynamic steps
+          # This is a basic example. You'll need to customize it based on your payload structure
+          payload=$(cat payload.json)
+          echo "      - name: Print Payload" >> .github/workflows/dynamic-workflow.yml
+          echo "        run: echo $payload" >> .github/workflows/dynamic-workflow.yml
+          
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@github.com'
           git add .github/workflows/dynamic-workflow.yml
