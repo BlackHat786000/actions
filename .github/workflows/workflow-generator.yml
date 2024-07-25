@@ -8,9 +8,6 @@ jobs:
   generate-and-trigger:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
       - name: Read JSON payload
         id: read-payload
         run: echo '${{ github.event.client_payload }}' > payload.json
@@ -33,8 +30,8 @@ jobs:
           echo "      - name: Print Payload" >> .github/workflows/dynamic-workflow.yml
           echo "        run: echo $payload" >> .github/workflows/dynamic-workflow.yml
 
-      - name: Commit and push dynamic workflow
-        run: |
+      - uses: actions/checkout@v4
+      - run: |
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@github.com'
           git add .github/workflows/dynamic-workflow.yml
