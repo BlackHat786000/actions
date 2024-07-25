@@ -19,7 +19,10 @@ jobs:
           echo '${{ github.event.client_payload }}' > payload.json
           
           echo "name: Dynamic Workflow" > .github/workflows/dynamic-workflow.yml
-          echo "on: [workflow_dispatch]" >> .github/workflows/dynamic-workflow.yml
+          echo "on:" >> .github/workflows/dynamic-workflow.yml
+          echo "  push:" >> .github/workflows/dynamic-workflow.yml
+          echo "    branches:" >> .github/workflows/dynamic-workflow.yml
+          echo "      - main" >> .github/workflows/dynamic-workflow.yml
           echo "jobs:" >> .github/workflows/dynamic-workflow.yml
           echo "  dynamic-job:" >> .github/workflows/dynamic-workflow.yml
           echo "    runs-on: ubuntu-latest" >> .github/workflows/dynamic-workflow.yml
@@ -38,17 +41,4 @@ jobs:
           git add .github/workflows/dynamic-workflow.yml
           git commit -m 'Add dynamic workflow'
           git push
-
-      - name: Trigger dynamic workflow
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const github = require('@actions/github');
-            const context = github.context;
-            const response = await github.actions.createWorkflowDispatch({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: 'dynamic-workflow.yml',
-              ref: 'main',
-            });
-            console.log(response);
+          
