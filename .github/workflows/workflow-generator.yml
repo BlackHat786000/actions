@@ -1,0 +1,41 @@
+name: Workflow Generator
+
+on:
+  repository_dispatch:
+    types: [dynamic-workflow]
+
+jobs:
+  generate-and-trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Read JSON payload
+        id: read-payload
+        run: echo '${{ toJson(github.event.client_payload) }}' > payload.json
+
+      - name: Generate dynamic workflow
+        id: generate-workflow
+        run: |
+          echo "name: Dynamic Workflow" > dynamic-workflow.yml
+          echo "on: [workflow_dispatch]" >> dynamic-workflow.yml
+          echo "jobs:" >> dynamic-workflow.yml
+          echo "  dynamic-job:" >> dynamic-workflow.yml
+          echo "    runs-on: ubuntu-latest" >> dynamic-workflow.yml
+          echo "    steps:" >> dynamic-workflow.yml
+          echo "      - name: Checkout repository" >> dynamic-workflow.yml
+          echo "        uses: actions/checkout@v2" >> dynamic-workflow.yml
+          
+          # Here you can parse the payload.json and generate the dynamic steps
+          # This is a basic example. You'll need to customize it based on your payload structure
+          payload=$(cat payload.json)
+          echo "      - name: Print Payload" >> dynamic-workflow.yml
+          echo "        run: echo $payload" >> dynamic-workflow.yml
+
+      - name: Install act
+        run: |
+          curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
+
+      - name: Run dynamic workflow
+        run: act -W dynamic-workflow.yml
