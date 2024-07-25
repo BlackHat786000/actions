@@ -4,6 +4,9 @@ on:
   repository_dispatch:
     types: [dynamic-workflow]
 
+permissions:
+  contents: write
+
 jobs:
   generate-and-trigger:
     runs-on: ubuntu-latest
