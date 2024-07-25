@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Run a script
+      run: echo "Hello, world!"
     - name: Checkout code
       uses: actions/checkout@v2
-    - name: Run a script
-      run: echo "Repository dispatch event received!"
