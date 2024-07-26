@@ -18,8 +18,8 @@ with:
   job_id: '123456'
   listener_timeout: 5
   authentication: 'SASL PLAIN'
-  sasl_username: 'username'
-  sasl_password: 'password'
+  sasl_username: ${{ secrets.username }}
+  sasl_password: ${{ secrets.password }}
   ssl_enabled: true
   ca_path: '/my/custom/ca.crt'
   client_cert: '/my/custom/client-cert.pem'
