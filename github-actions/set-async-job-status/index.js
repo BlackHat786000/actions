@@ -6,6 +6,7 @@ const fs = require('fs');
 let kafka_broker, topic_name, job_id, listener_timeout;
 let authentication, sasl_username, sasl_password;
 let ssl_enabled, ca_path, client_cert, client_key;
+let group_id, group_prefix;
 
 try {
     kafka_broker = core.getInput('kafka_broker');
@@ -14,6 +15,8 @@ try {
     listener_timeout = parseInt(core.getInput('listener_timeout'), 10);
     authentication = core.getInput('authentication');
     ssl_enabled = core.getInput('ssl_enabled') === 'true';
+	group_id = core.getInput('group_id');
+    group_prefix = core.getInput('group_prefix');
 
     if (!kafka_broker || !topic_name || !job_id) {
         throw new Error('kafka_broker, topic_name, and job_id are mandatory action inputs and cannot be empty.');
@@ -29,15 +32,12 @@ try {
 
     if (ssl_enabled) {
         ca_path = core.getInput('ca_path');
-        if (!ca_path) {
-            throw new Error('ca_path is mandatory when ssl_enabled is set to true.');
-        }
-        if (!fs.existsSync(ca_path)) {
+		client_cert = core.getInput('client_cert');
+        client_key = core.getInput('client_key');
+
+        if (ca_path && !fs.existsSync(ca_path)) {
             throw new Error(`ca certificate file does not exist at path '${ca_path}'`);
         }
-
-        client_cert = core.getInput('client_cert');
-        client_key = core.getInput('client_key');
 
         if (client_cert && !fs.existsSync(client_cert)) {
             throw new Error(`client certificate file does not exist at path '${client_cert}'`);
@@ -56,7 +56,7 @@ const kafkaConfig = {
     brokers: [kafka_broker],
     ssl: ssl_enabled ? {
         rejectUnauthorized: false,
-        ca: [fs.readFileSync(ca_path, 'utf-8')],
+		ca: ca_path ? fs.readFileSync(ca_path, 'utf-8') : undefined,
         cert: client_cert ? fs.readFileSync(client_cert, 'utf-8') : undefined,
         key: client_key ? fs.readFileSync(client_key, 'utf-8') : undefined,
     } : false
@@ -72,7 +72,7 @@ if (authentication && authentication.toUpperCase() === 'SASL PLAIN') {
 
 const kafka = new Kafka(kafkaConfig);
 const consumer = kafka.consumer({
-    groupId: `group-${uuidv4()}`
+    groupId: group_id || `${group_prefix}-${uuidv4()}`
 });
 
 async function run() {
@@ -85,7 +85,13 @@ async function run() {
 
         await consumer.run({
             eachMessage: async ({ topic, partition, message }) => {
-                const value = message.value.toString('utf8');
+                let value;
+				try {
+					value = message.value.toString('utf8');
+				} catch (error) {
+					core.setFailed(`[ERROR] Error while converting message to string: ${error.message}`);
+					return;
+				}
                 console.log('[DEBUG]', topic, partition, message.offset, value);
                 processMessage(value);
             },
@@ -110,7 +116,6 @@ function processMessage(message) {
         }
     } catch (error) {
         core.setFailed(`[ERROR] Error while processing message: ${error.message}`);
-        process.exit(1);
     }
 }
 

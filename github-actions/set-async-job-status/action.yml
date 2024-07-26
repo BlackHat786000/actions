@@ -36,6 +36,13 @@ inputs:
   client_key:
     description: 'PEM formatted file that contains your private key to be used for SSL client authentication'
     required: false
+  group_id:
+    description: 'Kafka consumer group ID'
+    required: false
+  group_prefix:
+    description: 'Prefix for the Kafka consumer group ID if group_id is not provided'
+    required: false
+    default: 'group'
 runs:
   using: 'node20'
   main: 'index.js'

@@ -65,7 +65,7 @@ with:
 
 - **`ca_path`**:
   - **Description:** PEM formatted file that contains a CA certificate to be used for validation
-  - **Required:** Only if ssl_enabled is set to true
+  - **Required:** No
 
 - **`client_cert`**:
   - **Description:** PEM formatted certificate chain file to be used for SSL client authentication
@@ -74,6 +74,15 @@ with:
 - **`client_key`**:
   - **Description:** PEM formatted file that contains your private key to be used for SSL client authentication
   - **Required:** No
+
+- **`group_id`**:
+  - **Description:** Kafka consumer group ID
+  - **Required:** No
+
+- **`group_prefix`**:
+  - **Description:** Prefix for the Kafka consumer group ID if group_id is not provided
+  - **Required:** No
+  - **Default:** 'group'
 
 ### Kafka Message Format
 
