@@ -48,7 +48,6 @@ try {
     }
 } catch (error) {
     core.setFailed(`[ERROR] Error while retrieving action inputs: ${error.message}`);
-    process.exit(1);
 }
 
 const kafkaConfig = {
@@ -106,7 +105,6 @@ async function run() {
         });
     } catch (error) {
         core.setFailed(`[ERROR] Error while running the consumer: ${error.message}`);
-        process.exit(1);
     }
 }
 
