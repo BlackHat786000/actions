@@ -91,12 +91,12 @@ async function run() {
                     console.error(`[ERROR] Error while converting message to string: ${error.message}`);
                     return;
                 }
-                console.log('[DEBUG]', topic, partition, message.offset, value);
+                console.debug('[DEBUG]', topic, partition, message.offset, value);
                 try {
                     const exitCode = processMessage(value);
                     await consumer.commitOffsets([{ topic, partition, offset: (Number(message.offset) + 1).toString() }]);
 					if (exitCode !== null) {
-						console.log(`[INFO] Marked current running job status as ${exitCode === 0 ? 'SUCCESS' : 'FAILED'}.`);
+						console.info(`[INFO] Marked current running job status as ${exitCode === 0 ? 'SUCCESS' : 'FAILED'}.`);
 						process.exit(exitCode);
 					}
                 } catch (error) {
@@ -126,6 +126,6 @@ function processMessage(message) {
 run();
 
 setTimeout(() => {
-    console.log(`[INFO] Listener timed out after waiting ${listener_timeout} minutes for target message, marked current running job status as FAILED.`);
+    console.info(`[INFO] Listener timed out after waiting ${listener_timeout} minutes for target message, marked current running job status as FAILED.`);
     process.exit(1);
 }, listener_timeout * 60 * 1000);
