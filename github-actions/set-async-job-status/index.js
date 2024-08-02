@@ -1,6 +1,5 @@
 const core = require('@actions/core');
 const { Kafka } = require('kafkajs');
-const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 
 let kafka_broker, topic_name, job_id, listener_timeout;
@@ -9,9 +8,9 @@ let ssl_enabled, ca_path, client_cert, client_key;
 let group_id, group_prefix;
 
 try {
-    kafka_broker = core.getInput('kafka_broker');
-    topic_name = core.getInput('topic_name');
-    job_id = core.getInput('job_id');
+    kafka_broker = core.getInput('kafka_broker', { required: true });
+    topic_name = core.getInput('topic_name', { required: true });
+    job_id = core.getInput('job_id', { required: true });
     listener_timeout = parseInt(core.getInput('listener_timeout'), 10);
     authentication = core.getInput('authentication');
     ssl_enabled = core.getInput('ssl_enabled') === 'true';
@@ -72,7 +71,7 @@ if (authentication && authentication.toUpperCase() === 'SASL PLAIN') {
 
 const kafka = new Kafka(kafkaConfig);
 const consumer = kafka.consumer({
-    groupId: group_id || `${group_prefix}-${uuidv4()}`
+    groupId: group_id || `${group_prefix}${job_id}`
 });
 
 async function run() {
@@ -86,14 +85,23 @@ async function run() {
         await consumer.run({
             eachMessage: async ({ topic, partition, message }) => {
                 let value;
-				try {
-					value = message.value.toString('utf8');
-				} catch (error) {
-					core.setFailed(`[ERROR] Error while converting message to string: ${error.message}`);
-					return;
-				}
-                console.log('[DEBUG]', topic, partition, message.offset, value);
-                processMessage(value);
+                try {
+                    value = message.value.toString('utf8');
+                } catch (error) {
+                    core.error(`[ERROR] Error while converting message to string: ${error.message}`);
+                    return;
+                }
+                core.debug('[DEBUG]', topic, partition, message.offset, value);
+                try {
+                    const exitCode = processMessage(value);
+                    await consumer.commitOffsets([{ topic, partition, offset: (Number(message.offset) + 1).toString() }]);
+					if (exitCode !== null) {
+						core.debug(`[INFO] Marked current running job status as ${exitCode === 0 ? 'SUCCESS' : 'FAILED'}.`);
+						process.exit(exitCode);
+					}
+                } catch (error) {
+                    core.error(`[ERROR] Error while processing message: ${error.message}`);
+                }
             },
         });
     } catch (error) {
@@ -103,25 +111,21 @@ async function run() {
 }
 
 function processMessage(message) {
-    try {
-        const parsedMessage = JSON.parse(message);
-        if (parsedMessage.job_id === job_id) {
-            if (parsedMessage.job_status === "SUCCESS") {
-                console.log("[INFO] Marked current running job status as SUCCESS.");
-                process.exit(0);
-            } else if (parsedMessage.job_status === "FAILED") {
-                console.log("[INFO] Marked current running job status as FAILED.");
-                process.exit(1);
-            }
+    const parsedMessage = JSON.parse(message);
+
+    if (parsedMessage.job_id === job_id) {
+        if (parsedMessage.job_status === "SUCCESS") {
+            return 0;
+        } else if (parsedMessage.job_status === "FAILED") {
+            return 1;
         }
-    } catch (error) {
-        core.setFailed(`[ERROR] Error while processing message: ${error.message}`);
     }
+    return null;
 }
 
 run();
 
 setTimeout(() => {
-    console.log(`[INFO] Listener timed out after waiting ${listener_timeout} minutes for target message, marked current running job status as FAILED.`);
+    core.debug(`[INFO] Listener timed out after waiting ${listener_timeout} minutes for target message, marked current running job status as FAILED.`);
     process.exit(1);
 }, listener_timeout * 60 * 1000);

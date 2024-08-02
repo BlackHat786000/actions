@@ -40,9 +40,9 @@ inputs:
     description: 'Kafka consumer group ID'
     required: false
   group_prefix:
-    description: 'Prefix for the Kafka consumer group ID if group_id is not provided'
+    description: 'Prefix to be used to generate consumer group ID like <group_prefix><job_id>'
     required: false
-    default: 'group'
+    default: 'group-'
 runs:
   using: 'node20'
   main: 'index.js'

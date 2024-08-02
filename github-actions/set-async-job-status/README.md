@@ -11,7 +11,7 @@ Create a workflow *.yml file in your repositories .github/workflows directory.
 ### Example Usage
 
 ```yaml
-uses: BlackHat786000/set-async-job-status@v2.0
+uses: BlackHat786000/set-async-job-status@v4.0
 with:
   kafka_broker: '12.34.56.78:9092'
   topic_name: 'myJsonTopic'
@@ -80,9 +80,9 @@ with:
   - **Required:** No
 
 - **`group_prefix`**:
-  - **Description:** Prefix for the Kafka consumer group ID if group_id is not provided
+  - **Description:** Prefix to be used to generate consumer group ID like <group_prefix><job_id>
   - **Required:** No
-  - **Default:** 'group'
+  - **Default:** 'group-'
 
 ### Kafka Message Format
 
