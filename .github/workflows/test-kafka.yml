@@ -23,11 +23,11 @@ jobs:
         id: async_step
         uses: BlackHat786000/set-async-job-status@v4.0
         with:
-          kafka_broker: '3.110.37.170:9094'
+          kafka_broker: '3.110.37.170:9093'
           topic_name: 'myFirstJsonTopic'
           job_id: ${{ steps.random_job_id.outputs.job_id }}
           authentication: 'SASL PLAIN'
           sasl_username: 'admin'
           sasl_password: 'admin-secret'
           listener_timeout: 5
-          ssl_enabled: true
+          ssl_enabled: false
