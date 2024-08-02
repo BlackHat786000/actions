@@ -27,7 +27,7 @@ jobs:
           topic_name: 'myFirstJsonTopic'
           job_id: '123456'
           authentication: 'SASL PLAIN'
-          sasl_username: 'admin'
-          sasl_password: 'admin-secret'
+          sasl_username: ${{ secrets.SASL_USERNAME }}
+          sasl_password: ${{ secrets.SASL_PASSWORD }}
           listener_timeout: 5
           ssl_enabled: false
