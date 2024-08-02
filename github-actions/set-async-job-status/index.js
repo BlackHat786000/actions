@@ -88,19 +88,19 @@ async function run() {
                 try {
                     value = message.value.toString('utf8');
                 } catch (error) {
-                    core.error(`[ERROR] Error while converting message to string: ${error.message}`);
+                    console.error(`[ERROR] Error while converting message to string: ${error.message}`);
                     return;
                 }
-                core.debug('[DEBUG]', topic, partition, message.offset, value);
+                console.log('[DEBUG]', topic, partition, message.offset, value);
                 try {
                     const exitCode = processMessage(value);
                     await consumer.commitOffsets([{ topic, partition, offset: (Number(message.offset) + 1).toString() }]);
 					if (exitCode !== null) {
-						core.debug(`[INFO] Marked current running job status as ${exitCode === 0 ? 'SUCCESS' : 'FAILED'}.`);
+						console.log(`[INFO] Marked current running job status as ${exitCode === 0 ? 'SUCCESS' : 'FAILED'}.`);
 						process.exit(exitCode);
 					}
                 } catch (error) {
-                    core.error(`[ERROR] Error while processing message: ${error.message}`);
+                    console.error(`[ERROR] Error while processing message: ${error.message}`);
                 }
             },
         });
@@ -126,6 +126,6 @@ function processMessage(message) {
 run();
 
 setTimeout(() => {
-    core.debug(`[INFO] Listener timed out after waiting ${listener_timeout} minutes for target message, marked current running job status as FAILED.`);
+    console.log(`[INFO] Listener timed out after waiting ${listener_timeout} minutes for target message, marked current running job status as FAILED.`);
     process.exit(1);
 }, listener_timeout * 60 * 1000);
