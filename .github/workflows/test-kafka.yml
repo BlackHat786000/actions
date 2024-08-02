@@ -1,8 +1,8 @@
-name: ASYNC
+name: TEST KAFKA
 
 on:
   repository_dispatch:
-    types: [async]
+    types: [test-kafka]
 
 jobs:
   async_job_status:
@@ -18,24 +18,16 @@ jobs:
       
       - name: Print random job ID
         run: echo "Random job ID is ${{ steps.random_job_id.outputs.job_id }}"
-
-      - name: Install CA certificate into truststore
-        run: |
-          sudo cp ${{ github.workspace }}/ca-certs/ca-cert.crt /usr/local/share/ca-certificates/ca-cert.crt
-          sudo update-ca-certificates
-
-      - name: Verify CA certificate installation
-        run: sudo openssl x509 -in /usr/local/share/ca-certificates/ca-cert.crt -text -noout
-        
+  
       - name: Set async job status
         id: async_step
-        uses: BlackHat786000/set-async-job-status@v3.0
+        uses: BlackHat786000/set-async-job-status@v4.0
         with:
-          kafka_broker: '3.110.37.170:9094'
+          kafka_broker: 'ec2-3-110-37-170.ap-south-1.compute.amazonaws.com:9093'
           topic_name: 'myFirstJsonTopic'
-          job_id: ${{ steps.random_job_id.outputs.job_id }}
+          job_id: '123456'
           authentication: 'SASL PLAIN'
-          sasl_username: 'admin'
-          sasl_password: 'admin-secret'
-          ssl_enabled: true
+          sasl_username: ${{ secrets.SASL_USERNAME }}
+          sasl_password: ${{ secrets.SASL_PASSWORD }}
           listener_timeout: 5
+          ssl_enabled: false
