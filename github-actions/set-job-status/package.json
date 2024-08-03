@@ -1,0 +1,21 @@
+{
+  "name": "set-async-job-status",
+  "version": "1.0.0",
+  "description": "The set-async-job-status GitHub Action allows you to update GitHub Actions workflow job status as success or failure based on Kafka event messages. It listens to a specified Kafka topic for messages containing job status information and updates the corresponding GitHub Actions job accordingly.",
+  "main": "dist/index.js",
+  "targets": {
+    "main": {
+      "includeNodeModules": true
+    }
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@actions/core": "^1.10.1",
+    "kafkajs": "^2.2.4"
+  }
+}

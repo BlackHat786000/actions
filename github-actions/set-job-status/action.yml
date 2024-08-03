@@ -1,0 +1,51 @@
+name: 'Set Async GitHub Workflow Job Status'
+description: 'Set GitHub Actions workflow job status as success or failure based on Kafka event message'
+inputs:
+  kafka_broker:
+    description: 'Bootstrap server URL with port <12.34.56.78:9092>'
+    required: true
+  topic_name:
+    description: 'Topic name that listener subscribes to'
+    required: true
+  job_id:
+    description: 'Action input `job_id` should match message-value.job_id to determine job status from message-value.job_status. message-value={"job_id":"123","job_status":"SUCCESS"||"FAILED"}'
+    required: true
+  listener_timeout:
+    description: 'Time in minutes for which listener will be actively waiting for target message'
+    required: false
+    default: 10
+  authentication:
+    description: 'Authentication mechanism (e.g., SASL PLAIN)'
+    required: false
+  sasl_username:
+    description: 'SASL username for authentication'
+    required: false
+  sasl_password:
+    description: 'SASL password for authentication'
+    required: false
+  ssl_enabled:
+    description: 'Enable SSL connection (true/false)'
+    required: false
+    default: false
+  ca_path:
+    description: 'PEM formatted file that contains a CA certificate to be used for validation'
+    required: false
+  client_cert:
+    description: 'PEM formatted certificate chain file to be used for SSL client authentication'
+    required: false
+  client_key:
+    description: 'PEM formatted file that contains your private key to be used for SSL client authentication'
+    required: false
+  group_id:
+    description: 'Kafka consumer group ID'
+    required: false
+  group_prefix:
+    description: 'Prefix to be used to generate consumer group ID like <group_prefix><job_id>'
+    required: false
+    default: 'group-'
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
+branding:
+  icon: 'check-circle'
+  color: 'green'
