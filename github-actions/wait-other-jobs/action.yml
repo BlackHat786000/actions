@@ -1,5 +1,6 @@
 name: 'wait-other-jobs'
 description: 'Waits for all or specific other jobs, even if they are defined in other workflows'
+author: 'Udit Yadav <yadavudit786@gmail.com>'
 branding:
   icon: 'check-circle'
   color: 'green'
