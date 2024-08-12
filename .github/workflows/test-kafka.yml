@@ -20,6 +20,7 @@ jobs:
         run: echo "Random job ID is ${{ steps.random_job_id.outputs.job_id }}"
   
       - name: Set async job status
+        continue-on-error: true
         id: async_step
         uses: BlackHat786000/actions/github-actions/set-async-job-status@ec2f6ddc29143533cea6da9a03377300c20f33d3
         with:
