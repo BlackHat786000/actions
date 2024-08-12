@@ -33,8 +33,8 @@ try {
         throw new Error('At least one of jinja_conditional, success_when, or job_id must be provided to determine the job status.');
     }
 
-    if (!kafka_broker || !topic_name || !job_id) {
-        throw new Error('kafka_broker, topic_name, and job_id are mandatory action inputs and cannot be empty.');
+    if (!kafka_broker || !topic_name) {
+        throw new Error('kafka_broker, topic_name are mandatory action inputs and cannot be empty.');
     }
 
     if (authentication && authentication.toUpperCase() === 'SASL PLAIN') {
