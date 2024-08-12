@@ -31,3 +31,6 @@ jobs:
           listener_timeout: 5
           ssl_enabled: true
           success_when: event.task_id == '786013' and event.task_status == 'SUCCESS'
+
+      - name: Get the JSON message
+        run: echo "The event was ${{ steps.async_step.outputs.json }}"
