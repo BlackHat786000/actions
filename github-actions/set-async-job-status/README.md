@@ -106,7 +106,7 @@ These inputs provide flexibility for scenarios where the job status is dependent
 If both success_when and fail_when are provided, the Action first checks the success_when condition to potentially mark the job as SUCCESS.
 If the success_when condition is not met and fail_when is provided, it then checks the fail_when condition to potentially mark the job as FAILED.
 
-```json
+```
 success_when: event.some_id == 'foo' and event.any_status == 'completed'
 fail_when: event.another_id >= 123456 and event.example_status == false // Optional
 ```
@@ -116,7 +116,7 @@ You can create complex logic and conditions to set the job status based on the c
 
 Conditional jinja template will be rendered with the Kafka message payload and must return SUCCESS or FAILED to mark the job status as SUCCESS or FAILED.
 
-```json
+```
 jinja_conditional: |
             {% if event.random_id < 11223344 and event.status == 'success' %}
             SUCCESS // return `SUCCESS` to mark job as success
