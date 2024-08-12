@@ -96,7 +96,7 @@ with:
   - **Description:** Jinja template that must return `SUCCESS` string or `FAILED` string against the kafka message payload to mark job status as SUCCESS/FAILED
   - **Required:** At least one of jinja_conditional, success_when, or job_id must be provided to determine the job status
 
-### `jinja_conditional`, `success_when`, `fail_when` examples
+### `jinja_conditional`, `success_when`, `fail_when`
 
 **Kafka JSON event message is injected into `event` object. We can use `event` to specify conditions in our workflow to determine job status using below action-inputs:**
 
