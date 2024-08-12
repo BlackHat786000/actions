@@ -31,6 +31,14 @@ jobs:
           sasl_password: ${{ secrets.SASL_PASSWORD }}
           listener_timeout: 5
           ssl_enabled: true
-
+          jinja_conditional: |
+            {% if event.task_id == '786013' and event.task_status == 'SUCCESS' %}
+            SUCCESS
+            {% elif event.task_id == '123456' and event.task_status == 'FAIL' %}
+            FAILED
+            {% else %}
+            CONTINUE
+            {% endif %}
+          
       - name: Get the JSON message
         run: echo "The event was ${{ steps.async_step.outputs.json }}"
