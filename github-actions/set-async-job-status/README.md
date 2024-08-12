@@ -38,7 +38,7 @@ with:
 
 - **`job_id`**:
   - **Description:** The job ID used to determine the job status from the message value.
-  - **Required:** Yes
+  - **Required:** At least one of jinja_conditional, success_when, or job_id must be provided to determine the job status
 
 - **`listener_timeout`**:
   - **Description:** Time in minutes for which the listener will be actively waiting for the target message.
@@ -80,28 +80,56 @@ with:
   - **Required:** No
 
 - **`group_prefix`**:
-  - **Description:** Prefix to be used to generate consumer group ID like <group_prefix><job_id>
+  - **Description:** Prefix to be used to generate consumer group ID like <group_prefix><job_id> (if `job_id` not provided, random UUID is used as group_suffix)
   - **Required:** No
   - **Default:** 'group-'
 
-### Kafka Message Format
+- **`success_when`**:
+  - **Description:** Conditional expression that evaluates to `true` against the kafka message payload to mark job status as SUCCESS
+  - **Required:** At least one of jinja_conditional, success_when, or job_id must be provided to determine the job status
 
-The messages sent to the Kafka topic should be in JSON format and contain at least the following two key-value pairs:
+- **`fail_when`**:
+  - **Description:** Conditional expression against the kafka message payload to mark job status as FAILED. This option only has an effect if `success_when` is provided
+  - **Required:** No
 
-- **`job_id`**: Represents the unique identifier of the job within the GitHub Actions workflow.
-- **`job_status`**: Indicates the status of the job, which could be either `SUCCESS` or `FAILED`.
+- **`jinja_conditional`**:
+  - **Description:** Jinja template that must return `SUCCESS` string or `FAILED` string against the kafka message payload to mark job status as SUCCESS/FAILED
+  - **Required:** At least one of jinja_conditional, success_when, or job_id must be provided to determine the job status
 
-Example message:
+### `jinja_conditional`, `success_when`, `fail_when` examples
+
+**Kafka JSON event message is injected into `event` object. We can use `event` to specify conditions in our workflow to determine job status using below action-inputs:**
+
+`success_when` and `fail_when` are used to evaluate specific conditions in the Kafka message to determine if the job should be marked as successful or failed.
+These inputs provide flexibility for scenarios where the job status is dependent on particular conditions within the message.
+
+If both success_when and fail_when are provided, the Action first checks the success_when condition to potentially mark the job as SUCCESS.
+If the success_when condition is not met and fail_when is provided, it then checks the fail_when condition to potentially mark the job as FAILED.
+
 ```json
-{
-  "job_id": "123456",
-  "job_status": "SUCCESS"
-}
+success_when: event.some_id == 'foo' and event.any_status == 'completed'
+fail_when: event.another_id >= 123456 and event.example_status == false // Optional
 ```
 
-### Role of Action Input `job_id`
+`jinja_conditional` offers a more advanced and flexible way to determine job status using Jinja2 templating.
+You can create complex logic and conditions to set the job status based on the content of the Kafka message.
 
-When using the GitHub Action, you need to provide a specific `job_id` as an input. This `job_id` serves as a reference point for the Action to match against the `job_id` present in the incoming Kafka messages. Based on this match, the Action determines the status (`job_status`) of the associated job.
+Conditional jinja template will be rendered with the Kafka message payload and must return SUCCESS or FAILED to mark the job status as SUCCESS or FAILED.
+
+```json
+jinja_conditional: |
+            {% if event.random_id < 11223344 and event.status == 'success' %}
+            SUCCESS // return `SUCCESS` to mark job as success
+            {% elif event.my_id == 'joe' and event.task_status == 'failure' %}
+            FAILED // return `FAILED` to mark job as failure
+            {% else %}
+            CONTINUE // return any string other than `SUCCESS` and `FAILED` to continue to listen
+            {% endif %}
+```
+
+### Role of Action Input `job_id` (Optional)
+
+When using the GitHub Action, you can optionally provide a specific `job_id` as an input. This `job_id` serves as a reference point for the Action to match against the `job_id` present in the incoming Kafka messages. Based on this match, the Action determines the status (`job_status`) of the associated job.
 
 For instance, if you provide `job_id: '123'` as an input to the Action, it will look for messages in the Kafka topic where the `job_id` matches '123'. If it finds a matching message, it will use the `job_status` value from that message to update the status of the corresponding job in the GitHub Actions workflow.
 
