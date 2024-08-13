@@ -36,8 +36,6 @@ jobs:
             SUCCESS
             {% elif event.task_id == '123456' and event.task_status == 'FAIL' %}
             FAILED
-            {% else %}
-            CONTINUE
             {% endif %}
           
       - name: Get the JSON message
