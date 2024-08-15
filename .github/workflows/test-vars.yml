@@ -1,0 +1,14 @@
+name: TEST REPOSITORY VARIABLES
+on:
+  repository_dispatch:
+    types: [test-vars]
+
+jobs:
+  build:
+    runs-on: ${{ vars['env_map'][github.event.client_payload.env]['runner'] }}
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ vars['env_map'][github.event.client_payload.env]['ref'] }}
