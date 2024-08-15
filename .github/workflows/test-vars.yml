@@ -5,10 +5,10 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ vars['env_map'][github.event.client_payload.env]['runner'] }}
+    runs-on: ${{ vars.env_map[github.event.client_payload.env]['runner'] }}
 
     steps:
       - name: Check out code
         uses: actions/checkout@v2
         with:
-          ref: ${{ vars['env_map'][github.event.client_payload.env]['ref'] }}
+          ref: ${{ vars.env_map[github.event.client_payload.env]['ref'] }}
