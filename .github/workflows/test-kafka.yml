@@ -23,7 +23,7 @@ jobs:
         id: async_step
         uses: BlackHat786000/actions/github-actions/set-async-job-status@5756b64376bbc3873f3655254c59ce699ab2bfb0
         with:
-          kafka_broker: '3.111.170.107:9094'
+          kafka_broker: '3.109.55.227:9094'
           topic_name: 'myFirstJsonTopic'
           job_id: '786013'
           authentication: 'SASL PLAIN'
