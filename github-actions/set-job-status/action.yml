@@ -9,10 +9,9 @@ inputs:
     required: true
   job_id:
     description: 'Action input `job_id` should match message-value.job_id to determine job status from message-value.job_status. message-value={"job_id":"123","job_status":"SUCCESS"||"FAILED"}'
-    required: true
+    required: false
   listener_timeout:
     description: 'Time in minutes for which listener will be actively waiting for target message'
-    required: false
     default: 10
   authentication:
     description: 'Authentication mechanism (e.g., SASL PLAIN)'
@@ -25,7 +24,6 @@ inputs:
     required: false
   ssl_enabled:
     description: 'Enable SSL connection (true/false)'
-    required: false
     default: false
   ca_path:
     description: 'PEM formatted file that contains a CA certificate to be used for validation'
@@ -41,8 +39,19 @@ inputs:
     required: false
   group_prefix:
     description: 'Prefix to be used to generate consumer group ID like <group_prefix><job_id>'
-    required: false
     default: 'group-'
+  success_when:
+    description: 'Conditional expression that evaluates to `true` to mark job status as SUCCESS'
+    required: false
+  fail_when:
+    description: 'Conditional expression to mark job status as FAILED. This option only has an effect if `success_when` is provided'
+    required: false
+  jinja_conditional:
+    description: 'Conditional jinja template that must return `SUCCESS` string or `FAILED` string to mark job status as SUCCESS/FAILED'
+    required: false
+outputs:
+  json:
+    description: 'JSON event message that marked job status as SUCCESS/FAILED'
 runs:
   using: 'node20'
   main: 'dist/index.js'
