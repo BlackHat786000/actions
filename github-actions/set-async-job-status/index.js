@@ -84,7 +84,8 @@ if (authentication && authentication.toUpperCase() === 'SASL PLAIN') {
     };
 }
 
-print(job_id);
+console.log('==== job_id ====');
+console.log(job_id);
 const workflowRunId = process.env.GITHUB_RUN_ID;
 const currentJobName = process.env.GITHUB_JOB;
 const group_suffix = `${workflowRunId}/${currentJobName}`;
