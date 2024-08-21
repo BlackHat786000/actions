@@ -1,7 +1,6 @@
 const core = require('@actions/core');
 const { Kafka } = require('kafkajs');
 const fs = require('fs');
-const { v4: uuidv4 } = require('uuid');
 const nunjucks = require('nunjucks');
 
 // Constants
@@ -88,7 +87,6 @@ if (authentication && authentication.toUpperCase() === 'SASL PLAIN') {
 const workflowRunId = process.env.GITHUB_RUN_ID;
 const currentJobName = process.env.GITHUB_JOB;
 const group_suffix = `${workflowRunId}/${currentJobName}`;
-console.info(group_suffix);
 
 const kafka = new Kafka(kafkaConfig);
 const consumer = kafka.consumer({
