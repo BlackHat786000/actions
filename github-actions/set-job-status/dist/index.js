@@ -20,12 +20,12 @@ var $4UN2M$async_hooks = require("async_hooks");
 var $4UN2M$zlib = require("zlib");
 var $4UN2M$string_decoder = require("string_decoder");
 var $4UN2M$diagnostics_channel = require("diagnostics_channel");
-var $4UN2M$fs = require("fs");
-var $4UN2M$os = require("os");
 var $4UN2M$path = require("path");
+var $4UN2M$os = require("os");
+var $4UN2M$crypto = require("crypto");
+var $4UN2M$fs = require("fs");
 var $4UN2M$console = require("console");
 var $4UN2M$url = require("url");
-var $4UN2M$crypto = require("crypto");
 
 
 function $parcel$export(e, n, v, s) {
@@ -29997,6 +29997,288 @@ module.exports = {
 
 });
 
+parcelRegister("e5tr3", function(module, exports) {
+
+
+var $a4185d8ef4233c62$require$Buffer = $4UN2M$buffer.Buffer;
+
+var $6mDsB = parcelRequire("6mDsB");
+
+
+
+
+var $3xcmX = parcelRequire("3xcmX");
+const $a4185d8ef4233c62$var$version = $3xcmX.version;
+const $a4185d8ef4233c62$var$LINE = /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\\'|[^'])*'|\s*"(?:\\"|[^"])*"|\s*`(?:\\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/mg;
+// Parse src into an Object
+function $a4185d8ef4233c62$var$parse(src) {
+    const obj = {};
+    // Convert buffer to string
+    let lines = src.toString();
+    // Convert line breaks to same format
+    lines = lines.replace(/\r\n?/mg, "\n");
+    let match;
+    while((match = $a4185d8ef4233c62$var$LINE.exec(lines)) != null){
+        const key = match[1];
+        // Default undefined or null to empty string
+        let value = match[2] || "";
+        // Remove whitespace
+        value = value.trim();
+        // Check if double quoted
+        const maybeQuote = value[0];
+        // Remove surrounding quotes
+        value = value.replace(/^(['"`])([\s\S]*)\1$/mg, "$2");
+        // Expand newlines if double quoted
+        if (maybeQuote === '"') {
+            value = value.replace(/\\n/g, "\n");
+            value = value.replace(/\\r/g, "\r");
+        }
+        // Add to object
+        obj[key] = value;
+    }
+    return obj;
+}
+function $a4185d8ef4233c62$var$_parseVault(options) {
+    const vaultPath = $a4185d8ef4233c62$var$_vaultPath(options);
+    // Parse .env.vault
+    const result = $a4185d8ef4233c62$var$DotenvModule.configDotenv({
+        path: vaultPath
+    });
+    if (!result.parsed) {
+        const err = new Error(`MISSING_DATA: Cannot parse ${vaultPath} for an unknown reason`);
+        err.code = "MISSING_DATA";
+        throw err;
+    }
+    // handle scenario for comma separated keys - for use with key rotation
+    // example: DOTENV_KEY="dotenv://:key_1234@dotenvx.com/vault/.env.vault?environment=prod,dotenv://:key_7890@dotenvx.com/vault/.env.vault?environment=prod"
+    const keys = $a4185d8ef4233c62$var$_dotenvKey(options).split(",");
+    const length = keys.length;
+    let decrypted;
+    for(let i = 0; i < length; i++)try {
+        // Get full key
+        const key = keys[i].trim();
+        // Get instructions for decrypt
+        const attrs = $a4185d8ef4233c62$var$_instructions(result, key);
+        // Decrypt
+        decrypted = $a4185d8ef4233c62$var$DotenvModule.decrypt(attrs.ciphertext, attrs.key);
+        break;
+    } catch (error) {
+        // last key
+        if (i + 1 >= length) throw error;
+    // try next key
+    }
+    // Parse decrypted .env string
+    return $a4185d8ef4233c62$var$DotenvModule.parse(decrypted);
+}
+function $a4185d8ef4233c62$var$_log(message) {
+    console.log(`[dotenv@${$a4185d8ef4233c62$var$version}][INFO] ${message}`);
+}
+function $a4185d8ef4233c62$var$_warn(message) {
+    console.log(`[dotenv@${$a4185d8ef4233c62$var$version}][WARN] ${message}`);
+}
+function $a4185d8ef4233c62$var$_debug(message) {
+    console.log(`[dotenv@${$a4185d8ef4233c62$var$version}][DEBUG] ${message}`);
+}
+function $a4185d8ef4233c62$var$_dotenvKey(options) {
+    // prioritize developer directly setting options.DOTENV_KEY
+    if (options && options.DOTENV_KEY && options.DOTENV_KEY.length > 0) return options.DOTENV_KEY;
+    // fallback to empty string
+    return "";
+}
+function $a4185d8ef4233c62$var$_instructions(result, dotenvKey) {
+    // Parse DOTENV_KEY. Format is a URI
+    let uri;
+    try {
+        uri = new URL(dotenvKey);
+    } catch (error) {
+        if (error.code === "ERR_INVALID_URL") {
+            const err = new Error("INVALID_DOTENV_KEY: Wrong format. Must be in valid uri format like dotenv://:key_1234@dotenvx.com/vault/.env.vault?environment=development");
+            err.code = "INVALID_DOTENV_KEY";
+            throw err;
+        }
+        throw error;
+    }
+    // Get decrypt key
+    const key = uri.password;
+    if (!key) {
+        const err = new Error("INVALID_DOTENV_KEY: Missing key part");
+        err.code = "INVALID_DOTENV_KEY";
+        throw err;
+    }
+    // Get environment
+    const environment = uri.searchParams.get("environment");
+    if (!environment) {
+        const err = new Error("INVALID_DOTENV_KEY: Missing environment part");
+        err.code = "INVALID_DOTENV_KEY";
+        throw err;
+    }
+    // Get ciphertext payload
+    const environmentKey = `DOTENV_VAULT_${environment.toUpperCase()}`;
+    const ciphertext = result.parsed[environmentKey] // DOTENV_VAULT_PRODUCTION
+    ;
+    if (!ciphertext) {
+        const err = new Error(`NOT_FOUND_DOTENV_ENVIRONMENT: Cannot locate environment ${environmentKey} in your .env.vault file.`);
+        err.code = "NOT_FOUND_DOTENV_ENVIRONMENT";
+        throw err;
+    }
+    return {
+        ciphertext: ciphertext,
+        key: key
+    };
+}
+function $a4185d8ef4233c62$var$_vaultPath(options) {
+    let possibleVaultPath = null;
+    if (options && options.path && options.path.length > 0) {
+        if (Array.isArray(options.path)) {
+            for (const filepath of options.path)if ($6mDsB.existsSync(filepath)) possibleVaultPath = filepath.endsWith(".vault") ? filepath : `${filepath}.vault`;
+        } else possibleVaultPath = options.path.endsWith(".vault") ? options.path : `${options.path}.vault`;
+    } else possibleVaultPath = $4UN2M$path.resolve($4UN2M$process.cwd(), ".env.vault");
+    if ($6mDsB.existsSync(possibleVaultPath)) return possibleVaultPath;
+    return null;
+}
+function $a4185d8ef4233c62$var$_resolveHome(envPath) {
+    return envPath[0] === "~" ? $4UN2M$path.join($4UN2M$os.homedir(), envPath.slice(1)) : envPath;
+}
+function $a4185d8ef4233c62$var$_configVault(options) {
+    $a4185d8ef4233c62$var$_log("Loading env from encrypted .env.vault");
+    const parsed = $a4185d8ef4233c62$var$DotenvModule._parseVault(options);
+    let processEnv = {};
+    if (options && options.processEnv != null) processEnv = options.processEnv;
+    $a4185d8ef4233c62$var$DotenvModule.populate(processEnv, parsed, options);
+    return {
+        parsed: parsed
+    };
+}
+function $a4185d8ef4233c62$var$configDotenv(options) {
+    const dotenvPath = $4UN2M$path.resolve($4UN2M$process.cwd(), ".env");
+    let encoding = "utf8";
+    const debug = Boolean(options && options.debug);
+    if (options && options.encoding) encoding = options.encoding;
+    else if (debug) $a4185d8ef4233c62$var$_debug("No encoding is specified. UTF-8 is used by default");
+    let optionPaths = [
+        dotenvPath
+    ] // default, look for .env
+    ;
+    if (options && options.path) {
+        if (!Array.isArray(options.path)) optionPaths = [
+            $a4185d8ef4233c62$var$_resolveHome(options.path)
+        ];
+        else {
+            optionPaths = [] // reset default
+            ;
+            for (const filepath of options.path)optionPaths.push($a4185d8ef4233c62$var$_resolveHome(filepath));
+        }
+    }
+    // Build the parsed data in a temporary object (because we need to return it).  Once we have the final
+    // parsed data, we will combine it with process.env (or options.processEnv if provided).
+    let lastError;
+    const parsedAll = {};
+    for (const path of optionPaths)try {
+        // Specifying an encoding returns a string instead of a buffer
+        const parsed = $a4185d8ef4233c62$var$DotenvModule.parse($6mDsB.readFileSync(path, {
+            encoding: encoding
+        }));
+        $a4185d8ef4233c62$var$DotenvModule.populate(parsedAll, parsed, options);
+    } catch (e) {
+        if (debug) $a4185d8ef4233c62$var$_debug(`Failed to load ${path} ${e.message}`);
+        lastError = e;
+    }
+    let processEnv = {};
+    if (options && options.processEnv != null) processEnv = options.processEnv;
+    $a4185d8ef4233c62$var$DotenvModule.populate(processEnv, parsedAll, options);
+    if (lastError) return {
+        parsed: parsedAll,
+        error: lastError
+    };
+    else return {
+        parsed: parsedAll
+    };
+}
+// Populates process.env from .env file
+function $a4185d8ef4233c62$var$config(options) {
+    // fallback to original dotenv if DOTENV_KEY is not set
+    if ($a4185d8ef4233c62$var$_dotenvKey(options).length === 0) return $a4185d8ef4233c62$var$DotenvModule.configDotenv(options);
+    const vaultPath = $a4185d8ef4233c62$var$_vaultPath(options);
+    // dotenvKey exists but .env.vault file does not exist
+    if (!vaultPath) {
+        $a4185d8ef4233c62$var$_warn(`You set DOTENV_KEY but you are missing a .env.vault file at ${vaultPath}. Did you forget to build it?`);
+        return $a4185d8ef4233c62$var$DotenvModule.configDotenv(options);
+    }
+    return $a4185d8ef4233c62$var$DotenvModule._configVault(options);
+}
+function $a4185d8ef4233c62$var$decrypt(encrypted, keyStr) {
+    const key = $a4185d8ef4233c62$require$Buffer.from(keyStr.slice(-64), "hex");
+    let ciphertext = $a4185d8ef4233c62$require$Buffer.from(encrypted, "base64");
+    const nonce = ciphertext.subarray(0, 12);
+    const authTag = ciphertext.subarray(-16);
+    ciphertext = ciphertext.subarray(12, -16);
+    try {
+        const aesgcm = $4UN2M$crypto.createDecipheriv("aes-256-gcm", key, nonce);
+        aesgcm.setAuthTag(authTag);
+        return `${aesgcm.update(ciphertext)}${aesgcm.final()}`;
+    } catch (error) {
+        const isRange = error instanceof RangeError;
+        const invalidKeyLength = error.message === "Invalid key length";
+        const decryptionFailed = error.message === "Unsupported state or unable to authenticate data";
+        if (isRange || invalidKeyLength) {
+            const err = new Error("INVALID_DOTENV_KEY: It must be 64 characters long (or more)");
+            err.code = "INVALID_DOTENV_KEY";
+            throw err;
+        } else if (decryptionFailed) {
+            const err = new Error("DECRYPTION_FAILED: Please check your DOTENV_KEY");
+            err.code = "DECRYPTION_FAILED";
+            throw err;
+        } else throw error;
+    }
+}
+// Populate process.env with parsed values
+function $a4185d8ef4233c62$var$populate(processEnv, parsed, options = {}) {
+    const debug = Boolean(options && options.debug);
+    const override = Boolean(options && options.override);
+    if (typeof parsed !== "object") {
+        const err = new Error("OBJECT_REQUIRED: Please check the processEnv argument being passed to populate");
+        err.code = "OBJECT_REQUIRED";
+        throw err;
+    }
+    // Set process.env
+    for (const key of Object.keys(parsed))if (Object.prototype.hasOwnProperty.call(processEnv, key)) {
+        if (override === true) processEnv[key] = parsed[key];
+        if (debug) {
+            if (override === true) $a4185d8ef4233c62$var$_debug(`"${key}" is already defined and WAS overwritten`);
+            else $a4185d8ef4233c62$var$_debug(`"${key}" is already defined and was NOT overwritten`);
+        }
+    } else processEnv[key] = parsed[key];
+}
+const $a4185d8ef4233c62$var$DotenvModule = {
+    configDotenv: $a4185d8ef4233c62$var$configDotenv,
+    _configVault: $a4185d8ef4233c62$var$_configVault,
+    _parseVault: $a4185d8ef4233c62$var$_parseVault,
+    config: $a4185d8ef4233c62$var$config,
+    decrypt: $a4185d8ef4233c62$var$decrypt,
+    parse: $a4185d8ef4233c62$var$parse,
+    populate: $a4185d8ef4233c62$var$populate
+};
+module.exports.configDotenv = $a4185d8ef4233c62$var$DotenvModule.configDotenv;
+module.exports._configVault = $a4185d8ef4233c62$var$DotenvModule._configVault;
+module.exports._parseVault = $a4185d8ef4233c62$var$DotenvModule._parseVault;
+module.exports.config = $a4185d8ef4233c62$var$DotenvModule.config;
+module.exports.decrypt = $a4185d8ef4233c62$var$DotenvModule.decrypt;
+module.exports.parse = $a4185d8ef4233c62$var$DotenvModule.parse;
+module.exports.populate = $a4185d8ef4233c62$var$DotenvModule.populate;
+module.exports = $a4185d8ef4233c62$var$DotenvModule;
+
+});
+parcelRegister("6mDsB", function(module, exports) {
+"use strict";
+
+});
+
+parcelRegister("3xcmX", function(module, exports) {
+module.exports = JSON.parse('{"name":"dotenv","version":"16.4.5","description":"Loads environment variables from .env file","main":"lib/main.js","types":"lib/main.d.ts","exports":{".":{"types":"./lib/main.d.ts","require":"./lib/main.js","default":"./lib/main.js"},"./config":"./config.js","./config.js":"./config.js","./lib/env-options":"./lib/env-options.js","./lib/env-options.js":"./lib/env-options.js","./lib/cli-options":"./lib/cli-options.js","./lib/cli-options.js":"./lib/cli-options.js","./package.json":"./package.json"},"scripts":{"dts-check":"tsc --project tests/types/tsconfig.json","lint":"standard","lint-readme":"standard-markdown","pretest":"npm run lint && npm run dts-check","test":"tap tests/*.js --100 -Rspec","test:coverage":"tap --coverage-report=lcov","prerelease":"npm test","release":"standard-version"},"repository":{"type":"git","url":"git://github.com/motdotla/dotenv.git"},"funding":"https://dotenvx.com","keywords":["dotenv","env",".env","environment","variables","config","settings"],"readmeFilename":"README.md","license":"BSD-2-Clause","devDependencies":{"@definitelytyped/dtslint":"^0.0.133","@types/node":"^18.11.3","decache":"^4.6.1","sinon":"^14.0.1","standard":"^17.0.0","standard-markdown":"^7.1.0","standard-version":"^9.5.0","tap":"^16.3.0","tar":"^6.1.11","typescript":"^4.8.4"},"engines":{"node":">=12"},"browser":{"fs":false}}');
+
+});
+
+
 
 var $9ccdc4e10588ec0a$exports = {};
 
@@ -47921,6 +48203,8 @@ var $b390b84af73eefa2$exports = {};
 });
 
 
+
+(parcelRequire("e5tr3")).config();
 // Constants
 const $383e46f26d360885$var$EVENT_ID_KEY = "job_id";
 const $383e46f26d360885$var$EVENT_STATUS_KEY = "job_status";
