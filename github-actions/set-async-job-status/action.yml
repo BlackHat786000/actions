@@ -10,7 +10,6 @@ inputs:
   job_id:
     description: 'Action input `job_id` should match message-value.job_id to determine job status from message-value.job_status. message-value={"job_id":"123","job_status":"SUCCESS"||"FAILED"}'
     required: false
-    default: {{ github.run_id }}
   listener_timeout:
     description: 'Time in minutes for which listener will be actively waiting for target message'
     default: 10
