@@ -20,11 +20,11 @@ jobs:
         id: async_step
         uses: BlackHat786000/actions/github-actions/set-job-status@4fe0b97b665baeab11236d0b4e7be17e772b2c24
         with:
-          kafka_broker: 'ec2-3-110-37-170.ap-south-1.compute.amazonaws.com:9093'
+          kafka_broker: '3.109.55.227:9094'
           topic_name: 'myFirstJsonTopic'
-          job_id: '123456'
           authentication: 'SASL PLAIN'
           sasl_username: ${{ secrets.SASL_USERNAME }}
           sasl_password: ${{ secrets.SASL_PASSWORD }}
-          ssl_enabled: false
+          ssl_enabled: true
           listener_timeout: 5
+          success_when: event.task_id == '786013' and event.task_status == 'SUCCESS'
