@@ -48203,8 +48203,6 @@ var $b390b84af73eefa2$exports = {};
 });
 
 
-
-(parcelRequire("e5tr3")).config();
 // Constants
 const $383e46f26d360885$var$EVENT_ID_KEY = "job_id";
 const $383e46f26d360885$var$EVENT_STATUS_KEY = "job_status";
@@ -48266,6 +48264,8 @@ if ($383e46f26d360885$var$authentication && $383e46f26d360885$var$authentication
     username: $383e46f26d360885$var$sasl_username,
     password: $383e46f26d360885$var$sasl_password
 };
+
+(parcelRequire("e5tr3")).config();
 const $383e46f26d360885$var$workflowRunId = undefined;
 const $383e46f26d360885$var$currentJobName = undefined;
 const $383e46f26d360885$var$group_suffix = `${$383e46f26d360885$var$workflowRunId}/${$383e46f26d360885$var$currentJobName}`;
