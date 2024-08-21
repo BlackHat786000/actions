@@ -21,11 +21,10 @@ jobs:
   
       - name: Set async job status
         id: async_step
-        uses: BlackHat786000/actions/github-actions/set-async-job-status@f8d54b978935337bf6c94c9b7458453479ad5320
+        uses: BlackHat786000/actions/github-actions/set-async-job-status@742fec851dcad063711c39e904cd78580ac2d13a
         with:
           kafka_broker: '3.109.55.227:9094'
           topic_name: 'myFirstJsonTopic'
-          job_id: '786013'
           authentication: 'SASL PLAIN'
           sasl_username: ${{ secrets.SASL_USERNAME }}
           sasl_password: ${{ secrets.SASL_PASSWORD }}
