@@ -105,7 +105,7 @@ async function run() {
                 } catch (error) {
                     core.error(`[ERROR] Error while converting message to string: ${error.message}`);
                 }
-                core.debug('[DEBUG]', topic, partition, message.offset, value);
+                core.debug(`Topic: ${topic}, Partition: ${partition}, Offset: ${message.offset}, Message: ${value}`);
                 try {
                     const jobStatus = processMessage(value);
                     await consumer.commitOffsets([{ topic, partition, offset: (Number(message.offset) + 1).toString() }]);
