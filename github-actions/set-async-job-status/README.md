@@ -11,7 +11,7 @@ Create a workflow *.yml file in your repositories .github/workflows directory.
 ### Example Usage
 
 ```yaml
-uses: BlackHat786000/set-async-job-status@v5.1
+uses: BlackHat786000/set-async-job-status@v5.2
 with:
   kafka_broker: '12.34.56.78:9092'
   topic_name: 'myJsonTopic'
@@ -24,6 +24,7 @@ with:
   client_cert: '/my/custom/client-cert.pem'
   client_key: '/my/custom/client-key.pem'
   success_when: event.some_id == 'foo' and event.any_status == 'completed'
+  fail_when: event.another_id >= 123456 and event.example_status == false
 ```
 
 ### Inputs
@@ -38,7 +39,7 @@ with:
 
 - **`job_id`**:
   - **Description:** The job ID used to determine the job status from the message value.
-  - **Required:** At least one of jinja_conditional, success_when, or job_id must be provided to determine the job status
+  - **Required:** At least one of jinja_conditional, success_when, or job_id (depreciated) must be provided to determine the job status
 
 - **`listener_timeout`**:
   - **Description:** Time in minutes for which the listener will be actively waiting for the target message.
@@ -86,7 +87,7 @@ with:
 
 - **`success_when`**:
   - **Description:** Conditional expression that evaluates to `true` against the kafka message payload to mark job status as SUCCESS
-  - **Required:** At least one of jinja_conditional, success_when, or job_id must be provided to determine the job status
+  - **Required:** At least one of jinja_conditional, success_when, or job_id (depreciated) must be provided to determine the job status
 
 - **`fail_when`**:
   - **Description:** Conditional expression against the kafka message payload to mark job status as FAILED. This option only has an effect if `success_when` is provided
@@ -94,7 +95,7 @@ with:
 
 - **`jinja_conditional`**:
   - **Description:** Jinja template that must return `SUCCESS` string or `FAILED` string against the kafka message payload to mark job status as SUCCESS/FAILED
-  - **Required:** At least one of jinja_conditional, success_when, or job_id must be provided to determine the job status
+  - **Required:** At least one of jinja_conditional, success_when, or job_id (depreciated) must be provided to determine the job status
 
 ### Outputs
 
@@ -130,7 +131,7 @@ jinja_conditional: |
             {% endif %}
 ```
 
-### Role of Action Input `job_id` (Optional) (Not Recommended)
+### Role of Action Input `job_id` (Not Recommended)
 
 When using the GitHub Action, you can optionally provide a specific `job_id` as an input. This `job_id` serves as a reference point for the Action to match against the `job_id` present in the incoming Kafka messages. Based on this match, the Action determines the job status (SUCCESS/FAILED) of the associated job.
 

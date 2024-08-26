@@ -29,7 +29,7 @@ try {
     jinja_conditional = core.getInput('jinja_conditional');
 
     if (!(jinja_conditional || success_when || job_id)) {
-        throw new Error('At least one of jinja_conditional, success_when, or job_id must be provided to determine the job status.');
+        throw new Error('At least one of jinja_conditional, success_when, or job_id (depreciated) must be provided to determine the job status.');
     }
 
     if (authentication && authentication.toUpperCase() === 'SASL PLAIN') {
@@ -103,23 +103,24 @@ async function run() {
                 try {
                     value = message.value.toString('utf8');
                 } catch (error) {
-                    console.error(`[ERROR] Error while converting message to string: ${error.message}`);
+                    core.error(`[ERROR] Error while converting message to string: ${error.message}`);
                 }
-                console.debug('[DEBUG]', topic, partition, message.offset, value);
+                core.debug('[DEBUG]', topic, partition, message.offset, value);
                 try {
                     const jobStatus = processMessage(value);
                     await consumer.commitOffsets([{ topic, partition, offset: (Number(message.offset) + 1).toString() }]);
                     if ([STATUS_SUCCESS, STATUS_FAILED].includes(jobStatus)) {
-                      console.info(`[INFO] Marked current running job status as ${jobStatus}.`);
                       core.setOutput("json", value);
                       if (jobStatus === STATUS_SUCCESS) {
+						core.info(`\u001b[32m[INFO] Marked current running job status as ${jobStatus}.`);
                         process.exit(0);
                       } else {
+						core.info(`\u001b[31m[INFO] Marked current running job status as ${jobStatus}.`);
                         process.exit(1);
                       }
                     }
                 } catch (error) {
-                    console.error(`[ERROR] Error while processing message: ${error.message}`);
+                    core.error(`[ERROR] Error while processing message: ${error.message}`);
                 }
             },
         });
@@ -134,7 +135,7 @@ function processMessage(message) {
     try {
         event = JSON.parse(message);
     } catch (error) {
-        console.error(`[ERROR] Error while parsing JSON message: ${error.message}`);
+        core.error(`[ERROR] Error while parsing JSON message: ${error.message}`);
         return '';
     }
 
@@ -186,6 +187,6 @@ function processJobEvent(event) {
 run();
 
 setTimeout(() => {
-    console.info(`[INFO] Listener timed out after waiting ${listener_timeout} minutes for target message, marked current running job status as ${STATUS_FAILED}.`);
+    core.info(`\u001b[31m[INFO] Listener timed out after waiting ${listener_timeout} minutes for target message, marked current running job status as ${STATUS_FAILED}.`);
     process.exit(1);
 }, listener_timeout * 60 * 1000);
