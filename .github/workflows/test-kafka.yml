@@ -25,6 +25,7 @@ jobs:
         with:
           kafka_broker: '13.201.37.163:9094'
           topic_name: 'myFirstJsonTopic'
+          job_id: 12345678
           authentication: 'SASL PLAIN'
           sasl_username: ${{ secrets.SASL_USERNAME }}
           sasl_password: ${{ secrets.SASL_PASSWORD }}
