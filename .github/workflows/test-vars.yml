@@ -12,9 +12,3 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ vars[format('{0}_ref', github.event.client_payload.env)] }}
-
-      - name: Echo in Green
-        run: echo "\033[32mThis is a green message"
-
-      - name: Echo in Red
-        run: echo "\033[31mThis is a red message"
