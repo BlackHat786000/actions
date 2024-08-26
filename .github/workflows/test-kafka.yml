@@ -28,7 +28,6 @@ jobs:
           job_id: 12345678
           authentication: 'SASL PLAIN'
           sasl_username: ${{ secrets.SASL_USERNAME }}
-          sasl_password: ${{ secrets.SASL_PASSWORD }}
           listener_timeout: 5
           ssl_enabled: true
           jinja_conditional: |
