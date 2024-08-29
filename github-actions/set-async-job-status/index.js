@@ -8,12 +8,16 @@ const EVENT_ID_KEY = 'job_id';
 const EVENT_STATUS_KEY = 'job_status';
 const STATUS_SUCCESS = 'SUCCESS';
 const STATUS_FAILED = 'FAILED';
+const TIMEOUT_JOB_ID = 'TIMEOUT_WITHOUT_MSG';
+const TIMEOUT_JOB_STATUS = 'Listener timed out without receiving any message';
 
 let kafka_broker, topic_name, job_id, listener_timeout;
 let authentication, sasl_username, sasl_password;
 let ssl_enabled, ca_path, client_cert, client_key;
 let group_id, group_prefix;
 let success_when, fail_when, jinja_conditional;
+
+let noMessageReceived = true;
 
 try {
     kafka_broker = core.getInput('kafka_broker', { required: true });
@@ -85,6 +89,7 @@ const currentJobName = process.env.GITHUB_JOB;
 const group_suffix = `${workflowRunId}/${currentJobName}`;
 
 const kafka = new Kafka(kafkaConfig);
+const producer = kafka.producer();
 const consumer = kafka.consumer({
     groupId: group_id || `${group_prefix}${group_suffix}`
 });
@@ -99,6 +104,7 @@ async function run() {
 
         await consumer.run({
             eachMessage: async ({ topic, partition, message }) => {
+                noMessageReceived = false;
                 let value;
                 try {
                     value = message.value.toString('utf8');
@@ -112,10 +118,10 @@ async function run() {
                     if ([STATUS_SUCCESS, STATUS_FAILED].includes(jobStatus)) {
                       core.setOutput("json", value);
                       if (jobStatus === STATUS_SUCCESS) {
-						core.info(`\u001b[32m[INFO] Marked current running job status as ${jobStatus}.`);
+                        core.info(`\u001b[32m[INFO] Marked current running job status as ${jobStatus}.`);
                         process.exit(0);
                       } else {
-						core.info(`\u001b[31m[INFO] Marked current running job status as ${jobStatus}.`);
+                        core.info(`\u001b[31m[INFO] Marked current running job status as ${jobStatus}.`);
                         process.exit(1);
                       }
                     }
@@ -134,6 +140,10 @@ function processMessage(message) {
     let event;
     try {
         event = JSON.parse(message);
+		if (event[EVENT_ID_KEY] === TIMEOUT_JOB_ID) {
+			core.debug(`Received timeout message: ${event}`);
+			return '';
+		}
     } catch (error) {
         core.error(`[ERROR] Error while parsing JSON message: ${error.message}`);
         return '';
@@ -184,9 +194,34 @@ function processJobEvent(event) {
     return '';
 }
 
+async function produceTimeoutMessage() {
+    try {
+        await producer.connect();
+        await producer.send({
+            topic: topic_name,
+            messages: [
+                {
+                    value: JSON.stringify({
+                        [EVENT_ID_KEY]: TIMEOUT_JOB_ID,
+                        [EVENT_STATUS_KEY]: TIMEOUT_JOB_STATUS
+                    })
+                }
+            ]
+        });
+        core.debug(`Sent timeout message successfully...`);
+    } catch (error) {
+        core.debug(`Error while producing timeout message: ${error.message}`);
+    } finally {
+        await producer.disconnect();
+    }
+}
+
 run();
 
-setTimeout(() => {
-    core.info(`\u001b[31m[INFO] Listener timed out after waiting ${listener_timeout} minutes for target message, marked current running job status as ${STATUS_FAILED}.`);
-    process.exit(1);
+setTimeout(async () => {
+    if (noMessageReceived) {
+        await produceTimeoutMessage();
+        core.info(`\u001b[31m[INFO] Listener timed out after waiting ${listener_timeout} minutes for target message, marked current running job status as ${STATUS_FAILED}.`);
+        process.exit(1);
+    }
 }, listener_timeout * 60 * 1000);
