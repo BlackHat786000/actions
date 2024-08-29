@@ -29,7 +29,7 @@ try {
     jinja_conditional = core.getInput('jinja_conditional');
 
     if (!(jinja_conditional || success_when || job_id)) {
-        throw new Error('At least one of jinja_conditional, success_when, or job_id (deprecated) must be provided to determine the job status.');
+        throw new Error('At least one of jinja_conditional, success_when, or job_id (depreciated) must be provided to determine the job status.');
     }
 
     if (authentication && authentication.toUpperCase() === 'SASL PLAIN') {
@@ -89,8 +89,6 @@ const consumer = kafka.consumer({
     groupId: group_id || `${group_prefix}${group_suffix}`
 });
 
-let noMessageReceived = true;
-
 async function run() {
     try {
         await consumer.connect();
@@ -101,7 +99,6 @@ async function run() {
 
         await consumer.run({
             eachMessage: async ({ topic, partition, message }) => {
-                noMessageReceived = false;
                 let value;
                 try {
                     value = message.value.toString('utf8');
@@ -113,14 +110,14 @@ async function run() {
                     const jobStatus = processMessage(value);
                     await consumer.commitOffsets([{ topic, partition, offset: (Number(message.offset) + 1).toString() }]);
                     if ([STATUS_SUCCESS, STATUS_FAILED].includes(jobStatus)) {
-                        core.setOutput("json", value);
-                        if (jobStatus === STATUS_SUCCESS) {
-                            core.info(`\u001b[32m[INFO] Marked current running job status as ${jobStatus}.`);
-                            process.exit(0);
-                        } else {
-                            core.info(`\u001b[31m[INFO] Marked current running job status as ${jobStatus}.`);
-                            process.exit(1);
-                        }
+                      core.setOutput("json", value);
+                      if (jobStatus === STATUS_SUCCESS) {
+						core.info(`\u001b[32m[INFO] Marked current running job status as ${jobStatus}.`);
+                        process.exit(0);
+                      } else {
+						core.info(`\u001b[31m[INFO] Marked current running job status as ${jobStatus}.`);
+                        process.exit(1);
+                      }
                     }
                 } catch (error) {
                     core.error(`[ERROR] Error while processing message: ${error.message}`);
@@ -130,30 +127,6 @@ async function run() {
     } catch (error) {
         core.setFailed(`[ERROR] Error while running the consumer: ${error.message}`);
         process.exit(1);
-    }
-}
-
-async function commitTimeoutOffset() {
-    try {
-        const topicPartitions = await consumer.partitionsFor(topic_name);
-
-        if (topicPartitions.length > 0) {
-            const partition = topicPartitions[0];
-
-            await consumer.commitOffsets([{ 
-                topic: topic_name, 
-                partition: partition.partition, 
-                offset: (partition.offset).toString() 
-            }]);
-
-            core.debug(`Committed offset for partition ${partition.partition} after timeout...`);
-        } else {
-            core.error(`[ERROR] No partitions found for topic: ${topic_name}`);
-        }
-    } catch (error) {
-        core.error(`[ERROR] Error while committing offset after timeout: ${error.message}`);
-    } finally {
-        await consumer.disconnect();
     }
 }
 
@@ -168,36 +141,36 @@ function processMessage(message) {
 
     let jobStatus;
     if (jinja_conditional) {
-        jobStatus = renderNunjucksTemplate(event, jinja_conditional);
+      jobStatus = renderNunjucksTemplate(event, jinja_conditional);
     } else if (success_when) {
-        jobStatus = renderConditionalTemplate(event, success_when, STATUS_SUCCESS);
-        if (fail_when && jobStatus !== STATUS_SUCCESS) {
-            jobStatus = renderConditionalTemplate(event, fail_when, STATUS_FAILED);
-        }
+      jobStatus = renderConditionalTemplate(event, success_when, STATUS_SUCCESS);
+      if (fail_when && jobStatus !== STATUS_SUCCESS) {
+        jobStatus = renderConditionalTemplate(event, fail_when, STATUS_FAILED);
+      }
     } else if (job_id) {
-        jobStatus = processJobEvent(event);
+      jobStatus = processJobEvent(event);
     }
 
     return jobStatus.trim().toUpperCase();
 }
 
 function renderNunjucksTemplate(event, templateStr) {
-    try {
-        const result = nunjucks.renderString(templateStr, { event });
-        return result;
-    } catch (e) {
-        return '';
-    }
+  try {
+    const result = nunjucks.renderString(templateStr, { event });
+    return result;
+  } catch (e) {
+    return '';
+  }
 }
 
 function renderConditionalTemplate(event, conditionStr, jobStatus) {
-    try {
-        const templateStr = `{% if ${conditionStr} %}${jobStatus}{% else %}{% endif %}`;
-        const result = nunjucks.renderString(templateStr, { event });
-        return result;
-    } catch (e) {
-        return '';
-    }
+  try {
+    const templateStr = `{% if ${conditionStr} %}${jobStatus}{% else %}{% endif %}`;
+    const result = nunjucks.renderString(templateStr, { event });
+    return result;
+  } catch (e) {
+    return '';
+  }
 }
 
 function processJobEvent(event) {
@@ -213,10 +186,7 @@ function processJobEvent(event) {
 
 run();
 
-setTimeout(async () => {
-    if (noMessageReceived) {
-        await commitTimeoutOffset();
-    }
-	core.info(`\u001b[31m[INFO] Listener timed out after waiting ${listener_timeout} minutes for target message, marked current running job status as ${STATUS_FAILED}.`);
+setTimeout(() => {
+    core.info(`\u001b[31m[INFO] Listener timed out after waiting ${listener_timeout} minutes for target message, marked current running job status as ${STATUS_FAILED}.`);
     process.exit(1);
 }, listener_timeout * 60 * 1000);
