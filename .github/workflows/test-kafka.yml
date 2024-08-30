@@ -21,7 +21,7 @@ jobs:
   
       - name: Set async job status
         id: async_step
-        uses: BlackHat786000/actions/github-actions/set-async-job-status@700ec5379e4290b7490dd03060659d8361949329
+        uses: BlackHat786000/actions/github-actions/set-async-job-status@43fcb69a48e991fd92e591dcfe36d0ac367ed01b
         with:
           kafka_broker: '13.233.151.94:9093'
           topic_name: 'myFirstJsonTopic'
@@ -29,7 +29,7 @@ jobs:
           authentication: 'SASL PLAIN'
           sasl_username: ${{ secrets.SASL_USERNAME }}
           sasl_password: ${{ secrets.SASL_PASSWORD }}
-          listener_timeout: 1
+          listener_timeout: 5
           ssl_enabled: false
           jinja_conditional: |
             {% if event.task_id == '786013' and event.task_status == 'SUCCESS' %}
