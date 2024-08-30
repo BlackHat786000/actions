@@ -29,7 +29,7 @@ jobs:
         
       - name: Set async job status
         id: async_step
-        uses: BlackHat786000/set-async-job-status@v5.2
+        uses: BlackHat786000/set-async-job-status@v5.3
         with:
           kafka_broker: 'absurvey.duckdns.org:9094'
           topic_name: 'myFirstJsonTopic'
