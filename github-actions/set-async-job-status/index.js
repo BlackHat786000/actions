@@ -124,16 +124,17 @@ async function run() {
                 } catch (error) {
                     core.error(`[ERROR] Error while processing message: ${error.message}`);
                 }
-            },
+				finally {
+					core.info('disconnecting consumer');
+					await consumer.disconnect();
+					process.exit(0);
+				}
+            }
         });
     } catch (error) {
         core.setFailed(`[ERROR] Error while running the consumer: ${error.message}`);
         process.exit(1);
-    } finally {
-		core.info('disconnecting consumer');
-		await consumer.disconnect();
-        process.exit(0);
-	}
+    }
 }
 
 function processMessage(message) {
