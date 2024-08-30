@@ -88,15 +88,12 @@ const consumer = kafka.consumer({
 
 async function run() {
     try {
-		core.info('getting latest offset....');
+		core.info('getting topic offsets....');
 		await admin.connect();
-		let groupId = group_id || `${group_prefix}${process.env.GITHUB_RUN_ID}/${process.env.GITHUB_JOB}`;
-        const offsets = await admin.fetchOffsets({ groupId, topic_name });
+        const topicOffsets = await admin.fetchTopicOffsets(topic_name);
+		core.info(topicOffsets);
         await admin.disconnect();
-
-        offsets.forEach(({ partition, offset }) => {
-            core.info(`Partition: ${partition}, Latest Offset: ${offset}`);
-        });
+		
         await consumer.connect();
         await consumer.subscribe({
             topic: topic_name,
