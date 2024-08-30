@@ -21,7 +21,7 @@ jobs:
   
       - name: Set async job status
         id: async_step
-        uses: BlackHat786000/actions/github-actions/set-async-job-status@c7c1fe1e6b9a1f502bbf7b42fe848f1aead1a767
+        uses: BlackHat786000/actions/github-actions/set-async-job-status@0a6f98accf36136ddd891bf780bb8d43997f245f
         with:
           kafka_broker: '13.233.151.94:9093'
           topic_name: 'myFirstJsonTopic'
