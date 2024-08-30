@@ -187,7 +187,7 @@ function processJobEvent(event) {
 
 run();
 
-setTimeout(() => {
+setTimeout(async () => {
     core.info(`\u001b[31m[INFO] Listener timed out after waiting ${listener_timeout} minutes for target message, marked current running job status as ${STATUS_FAILED}.`);
 
 	// [EDGE SCENARIO] When new consumer with new consumer group times out without committing any offset
