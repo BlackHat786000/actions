@@ -15,8 +15,6 @@ let ssl_enabled, ca_path, client_cert, client_key;
 let group_id, group_prefix;
 let success_when, fail_when, jinja_conditional;
 
-let topicOffsets;
-
 try {
     kafka_broker = core.getInput('kafka_broker', { required: true });
     topic_name = core.getInput('topic_name', { required: true });
@@ -31,7 +29,7 @@ try {
     jinja_conditional = core.getInput('jinja_conditional');
 
     if (!(jinja_conditional || success_when || job_id)) {
-        throw new Error('At least one of jinja_conditional, success_when, or job_id (deprecated) must be provided to determine the job status.');
+        throw new Error('At least one of jinja_conditional, success_when, or job_id (depreciated) must be provided to determine the job status.');
     }
 
     if (authentication && authentication.toUpperCase() === 'SASL PLAIN') {
@@ -82,10 +80,14 @@ if (authentication && authentication.toUpperCase() === 'SASL PLAIN') {
     };
 }
 
+const workflowRunId = process.env.GITHUB_RUN_ID;
+const currentJobName = process.env.GITHUB_JOB;
+const group_suffix = `${workflowRunId}/${currentJobName}`;
+
 const kafka = new Kafka(kafkaConfig);
 const admin = kafka.admin();
 const consumer = kafka.consumer({
-    groupId: group_id || `${group_prefix}${process.env.GITHUB_RUN_ID}/${process.env.GITHUB_JOB}`
+    groupId: group_id || `${group_prefix}${group_suffix}`
 });
 
 async function run() {
@@ -109,14 +111,14 @@ async function run() {
                     const jobStatus = processMessage(value);
                     await consumer.commitOffsets([{ topic, partition, offset: (Number(message.offset) + 1).toString() }]);
                     if ([STATUS_SUCCESS, STATUS_FAILED].includes(jobStatus)) {
-                        core.setOutput("json", value);
-                        if (jobStatus === STATUS_SUCCESS) {
-                            core.info(`\u001b[32m[INFO] Marked current running job status as ${jobStatus}.`);
-                            process.exit(0);
-                        } else {
-                            core.info(`\u001b[31m[INFO] Marked current running job status as ${jobStatus}.`);
-                            process.exit(1);
-                        }
+                      core.setOutput("json", value);
+                      if (jobStatus === STATUS_SUCCESS) {
+						core.info(`\u001b[32m[INFO] Marked current running job status as ${jobStatus}.`);
+                        process.exit(0);
+                      } else {
+						core.info(`\u001b[31m[INFO] Marked current running job status as ${jobStatus}.`);
+                        process.exit(1);
+                      }
                     }
                 } catch (error) {
                     core.error(`[ERROR] Error while processing message: ${error.message}`);
@@ -140,36 +142,36 @@ function processMessage(message) {
 
     let jobStatus;
     if (jinja_conditional) {
-        jobStatus = renderNunjucksTemplate(event, jinja_conditional);
+      jobStatus = renderNunjucksTemplate(event, jinja_conditional);
     } else if (success_when) {
-        jobStatus = renderConditionalTemplate(event, success_when, STATUS_SUCCESS);
-        if (fail_when && jobStatus !== STATUS_SUCCESS) {
-            jobStatus = renderConditionalTemplate(event, fail_when, STATUS_FAILED);
-        }
+      jobStatus = renderConditionalTemplate(event, success_when, STATUS_SUCCESS);
+      if (fail_when && jobStatus !== STATUS_SUCCESS) {
+        jobStatus = renderConditionalTemplate(event, fail_when, STATUS_FAILED);
+      }
     } else if (job_id) {
-        jobStatus = processJobEvent(event);
+      jobStatus = processJobEvent(event);
     }
 
     return jobStatus.trim().toUpperCase();
 }
 
 function renderNunjucksTemplate(event, templateStr) {
-    try {
-        const result = nunjucks.renderString(templateStr, { event });
-        return result;
-    } catch (e) {
-        return '';
-    }
+  try {
+    const result = nunjucks.renderString(templateStr, { event });
+    return result;
+  } catch (e) {
+    return '';
+  }
 }
 
 function renderConditionalTemplate(event, conditionStr, jobStatus) {
-    try {
-        const templateStr = `{% if ${conditionStr} %}${jobStatus}{% else %}{% endif %}`;
-        const result = nunjucks.renderString(templateStr, { event });
-        return result;
-    } catch (e) {
-        return '';
-    }
+  try {
+    const templateStr = `{% if ${conditionStr} %}${jobStatus}{% else %}{% endif %}`;
+    const result = nunjucks.renderString(templateStr, { event });
+    return result;
+  } catch (e) {
+    return '';
+  }
 }
 
 function processJobEvent(event) {
@@ -185,31 +187,29 @@ function processJobEvent(event) {
 
 run();
 
-setTimeout(async () => {
-    core.info(`\u001b[31m[INFO] Listener timed out after waiting ${listener_timeout} minutes for target message, marking offsets to the latest and terminating.`);
+setTimeout(() => {
+    core.info(`\u001b[31m[INFO] Listener timed out after waiting ${listener_timeout} minutes for target message, marked current running job status as ${STATUS_FAILED}.`);
 
-    try {
-        await admin.connect();
-        
-        // Fetch the latest offsets for each partition
-        const topicOffsets = await admin.fetchTopicOffsets(topic_name);
-        console.log('Latest Offsets:', topicOffsets);
+	// [EDGE SCENARIO] When new consumer with new consumer group times out without committing any offset
+	// and is restarted again, it processes messages from latest offset because of 'fromBeginning: false'
+	// Hence messages produced after timeout and before consumer restart are missed from being processed
 
-        // Commit the latest offsets for each partition
-        const offsetsToCommit = topicOffsets.map(({ partition, offset }) => ({
+	// [EDGE SCENARIO FIX] Fetch and commit latest offset for each partition in given topic for consumer
+	try {
+		await admin.connect();
+		const topicOffsets = await admin.fetchTopicOffsets(topic_name);
+        core.debug('Fetched topic offsets:', topicOffsets);
+		const offsetsToCommit = topicOffsets.map(({ partition, offset }) => ({
             topic: topic_name,
             partition,
-            offset: offset  // Commit the offset to the next position
+            offset: offset
         }));
-        
-        await consumer.commitOffsets(offsetsToCommit);
-        console.log('Offsets committed successfully');
+		await consumer.commitOffsets(offsetsToCommit);
+		core.debug('Offsets committed successfully');
+		await admin.disconnect();
+	} catch(error) {
+		core.error(`[ERROR] Error while fetching and committing offsets: ${error.message}`);
+	}
 
-        await admin.disconnect();
-    } catch (error) {
-        core.error(`[ERROR] Error while committing offsets: ${error.message}`);
-    }
-
-    core.info(`\u001b[31m[INFO] Listener timeout handled, exiting.`);
     process.exit(1);
 }, listener_timeout * 60 * 1000);
