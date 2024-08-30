@@ -81,29 +81,22 @@ if (authentication && authentication.toUpperCase() === 'SASL PLAIN') {
 }
 
 const kafka = new Kafka(kafkaConfig);
+const admin = kafka.admin();
 const consumer = kafka.consumer({
     groupId: group_id || `${group_prefix}${process.env.GITHUB_RUN_ID}/${process.env.GITHUB_JOB}`
 });
 
-async function getLatestOffset(topic, groupId) {
+async function run() {
     try {
-        const admin = kafka.admin();
-        await admin.connect();
-        const offsets = await admin.fetchOffsets({ groupId, topic });
+		core.info('getting latest offset....');
+		await admin.connect();
+		let groupId = group_id || `${group_prefix}${process.env.GITHUB_RUN_ID}/${process.env.GITHUB_JOB}`;
+        const offsets = await admin.fetchOffsets({ groupId, topic_name });
         await admin.disconnect();
 
         offsets.forEach(({ partition, offset }) => {
             core.info(`Partition: ${partition}, Latest Offset: ${offset}`);
         });
-    } catch (error) {
-        core.error(`[ERROR] Error while fetching latest offsets: ${error.message}`);
-    }
-}
-
-async function run() {
-    try {
-		core.info('getting latest offset....');
-		await getLatestOffset(topic_name, group_id || `${group_prefix}${process.env.GITHUB_RUN_ID}/${process.env.GITHUB_JOB}`);
         await consumer.connect();
         await consumer.subscribe({
             topic: topic_name,
