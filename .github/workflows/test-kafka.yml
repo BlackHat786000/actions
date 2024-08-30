@@ -29,7 +29,7 @@ jobs:
           authentication: 'SASL PLAIN'
           sasl_username: ${{ secrets.SASL_USERNAME }}
           sasl_password: ${{ secrets.SASL_PASSWORD }}
-          listener_timeout: 5
+          listener_timeout: 1
           ssl_enabled: false
           jinja_conditional: |
             {% if event.task_id == '786013' and event.task_status == 'SUCCESS' %}
