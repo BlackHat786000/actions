@@ -15,6 +15,8 @@ let ssl_enabled, ca_path, client_cert, client_key;
 let group_id, group_prefix;
 let success_when, fail_when, jinja_conditional;
 
+let topicOffsets;
+
 try {
     kafka_broker = core.getInput('kafka_broker', { required: true });
     topic_name = core.getInput('topic_name', { required: true });
@@ -90,7 +92,7 @@ async function run() {
     try {
 		core.info('Getting topic offsets...');
 		await admin.connect();
-		const topicOffsets = await admin.fetchTopicOffsets(topic_name);
+		topicOffsets = await admin.fetchTopicOffsets(topic_name);
 
 		// Print each offset object with high and low offsets
 		topicOffsets.forEach((offset) => {
@@ -197,7 +199,8 @@ function processJobEvent(event) {
 
 run();
 
-setTimeout(() => {
+setTimeout(async () => {
     core.info(`\u001b[31m[INFO] Listener timed out after waiting ${listener_timeout} minutes for target message, marked current running job status as ${STATUS_FAILED}.`);
+	await consumer.commitOffsets([{ topic_name, 0, offset: topicOffsets[0].offset }]);
     process.exit(1);
 }, listener_timeout * 60 * 1000);
