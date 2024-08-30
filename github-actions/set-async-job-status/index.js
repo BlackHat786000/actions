@@ -199,7 +199,7 @@ setTimeout(async () => {
         const offsetsToCommit = topicOffsets.map(({ partition, offset }) => ({
             topic: topic_name,
             partition,
-            offset: (Number(offset) + 1).toString()  // Commit the offset to the next position
+            offset: offset  // Commit the offset to the next position
         }));
         
         await consumer.commitOffsets(offsetsToCommit);
