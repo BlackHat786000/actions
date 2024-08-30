@@ -36,6 +36,6 @@ jobs:
           authentication: 'SASL PLAIN'
           sasl_username: 'admin'
           sasl_password: 'admin-secret'
-          ssl_enabled: true
+          ssl_enabled: false
           listener_timeout: 5
           success_when: event.task_id == '786013' and event.task_status == 'SUCCESS'
