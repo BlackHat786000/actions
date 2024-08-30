@@ -198,7 +198,7 @@ setTimeout(async () => {
 	try {
 		await admin.connect();
 		const topicOffsets = await admin.fetchTopicOffsets(topic_name);
-        core.debug('Fetched topic offsets:', topicOffsets);
+        core.debug(`Fetched topic offsets:\n${JSON.stringify(topicOffsets, null, 2)}`);
 		const offsetsToCommit = topicOffsets.map(({ partition, offset }) => ({
             topic: topic_name,
             partition,
