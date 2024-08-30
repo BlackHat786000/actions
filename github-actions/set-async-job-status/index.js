@@ -114,13 +114,11 @@ async function run() {
                       core.setOutput("json", value);
                       if (jobStatus === STATUS_SUCCESS) {
 						core.info(`\u001b[32m[INFO] Marked current running job status as ${jobStatus}.`);
-						setTimout(() => {
+						setTimeout(() => {
 							console.log('disconnect consumer');
-							consumer.stop()
+							consumer.stop();
 							process.exit(0);
-							}
-						, 1);
-                        process.exit(0);
+						}, 1);
                       } else {
 						core.info(`\u001b[31m[INFO] Marked current running job status as ${jobStatus}.`);
                         process.exit(1);
