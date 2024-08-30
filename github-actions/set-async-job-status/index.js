@@ -29,7 +29,7 @@ try {
     jinja_conditional = core.getInput('jinja_conditional');
 
     if (!(jinja_conditional || success_when || job_id)) {
-        throw new Error('At least one of jinja_conditional, success_when, or job_id (depreciated) must be provided to determine the job status.');
+        throw new Error('At least one of jinja_conditional, success_when, or job_id (deprecated) must be provided to determine the job status.');
     }
 
     if (authentication && authentication.toUpperCase() === 'SASL PLAIN') {
@@ -80,14 +80,25 @@ if (authentication && authentication.toUpperCase() === 'SASL PLAIN') {
     };
 }
 
-const workflowRunId = process.env.GITHUB_RUN_ID;
-const currentJobName = process.env.GITHUB_JOB;
-const group_suffix = `${workflowRunId}/${currentJobName}`;
-
 const kafka = new Kafka(kafkaConfig);
 const consumer = kafka.consumer({
-    groupId: group_id || `${group_prefix}${group_suffix}`
+    groupId: group_id || `${group_prefix}${process.env.GITHUB_RUN_ID}/${process.env.GITHUB_JOB}`
 });
+
+async function getLatestOffset(topic, groupId) {
+    try {
+        const admin = kafka.admin();
+        await admin.connect();
+        const offsets = await admin.fetchOffsets({ groupId, topic });
+        await admin.disconnect();
+
+        offsets.forEach(({ partition, offset }) => {
+            core.info(`Partition: ${partition}, Latest Offset: ${offset}`);
+        });
+    } catch (error) {
+        core.error(`[ERROR] Error while fetching latest offsets: ${error.message}`);
+    }
+}
 
 async function run() {
     try {
@@ -96,6 +107,8 @@ async function run() {
             topic: topic_name,
             fromBeginning: false
         });
+
+        await getLatestOffset(topic_name, group_id || `${group_prefix}${process.env.GITHUB_RUN_ID}/${process.env.GITHUB_JOB}`);
 
         await consumer.run({
             eachMessage: async ({ topic, partition, message }) => {
