@@ -102,13 +102,15 @@ async function getLatestOffset(topic, groupId) {
 
 async function run() {
     try {
+		core.info('getting latest offset....');
+		await getLatestOffset(topic_name, group_id || `${group_prefix}${process.env.GITHUB_RUN_ID}/${process.env.GITHUB_JOB}`);
         await consumer.connect();
         await consumer.subscribe({
             topic: topic_name,
             fromBeginning: false
         });
 
-        await getLatestOffset(topic_name, group_id || `${group_prefix}${process.env.GITHUB_RUN_ID}/${process.env.GITHUB_JOB}`);
+        
 
         await consumer.run({
             eachMessage: async ({ topic, partition, message }) => {
