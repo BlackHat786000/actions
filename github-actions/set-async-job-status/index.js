@@ -207,6 +207,7 @@ setTimeout(async () => {
 		await consumer.commitOffsets(offsetsToCommit);
 		core.debug('Offsets committed successfully');
 		await admin.disconnect();
+		await consumer.disconnect();
 	} catch(error) {
 		core.error(`[ERROR] Error while fetching and committing offsets: ${error.message}`);
 	}
