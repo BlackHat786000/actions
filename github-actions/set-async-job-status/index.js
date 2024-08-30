@@ -135,6 +135,17 @@ async function run() {
         core.setFailed(`[ERROR] Error while running the consumer: ${error.message}`);
         process.exit(1);
     }
+	
+	await new Promise((resolve, reject) => {
+    const wrapUpAndExit = async () => {
+      console.log('Oh its full');
+      await consumer.stop();
+      await consumer.disconnect();
+      console.log('Now exit');
+      resolve(null);
+    }
+    events.on('full', wrapUpAndExit);
+});
 }
 
 function processMessage(message) {
@@ -220,13 +231,4 @@ setTimeout(async () => {
     process.exit(1);
 }, listener_timeout * 60 * 1000);
 
-await new Promise((resolve, reject) => {
-    const wrapUpAndExit = async () => {
-      console.log('Oh its full');
-      await consumer.stop();
-      await consumer.disconnect();
-      console.log('Now exit');
-      resolve(null);
-    }
-    events.on('full', wrapUpAndExit);
-});
+
