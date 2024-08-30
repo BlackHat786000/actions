@@ -113,12 +113,12 @@ async function run() {
                       core.setOutput("json", value);
                       if (jobStatus === STATUS_SUCCESS) {
 						core.info(`\u001b[32m[INFO] Marked current running job status as ${jobStatus}.`);
-						await consumer.disconnect();
-                        process.exit(0);
+						//await consumer.disconnect();
+                        //process.exit(0);
                       } else {
 						core.info(`\u001b[31m[INFO] Marked current running job status as ${jobStatus}.`);
-						await consumer.disconnect();
-                        process.exit(1);
+						//await consumer.disconnect();
+                        //process.exit(1);
                       }
                     }
                 } catch (error) {
@@ -129,7 +129,11 @@ async function run() {
     } catch (error) {
         core.setFailed(`[ERROR] Error while running the consumer: ${error.message}`);
         process.exit(1);
-    }
+    } finally {
+		core.info('disconnecting consumer');
+		await consumer.disconnect();
+        process.exit(0);
+	}
 }
 
 function processMessage(message) {
