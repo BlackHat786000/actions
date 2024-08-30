@@ -21,7 +21,7 @@ jobs:
   
       - name: Set async job status
         id: async_step
-        uses: BlackHat786000/actions/github-actions/set-async-job-status@name: TEST KAFKA
+        uses: BlackHat786000/actions/github-actions/set-async-job-status@0a6f98accf36136ddd891bf780bb8d43997f245f
 
 on:
   repository_dispatch:
