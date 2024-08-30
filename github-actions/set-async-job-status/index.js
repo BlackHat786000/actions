@@ -88,11 +88,17 @@ const consumer = kafka.consumer({
 
 async function run() {
     try {
-		core.info('getting topic offsets....');
+		core.info('Getting topic offsets...');
 		await admin.connect();
-        const topicOffsets = await admin.fetchTopicOffsets(topic_name);
-		core.info(topicOffsets);
-        await admin.disconnect();
+		const topicOffsets = await admin.fetchTopicOffsets(topic_name);
+
+		// Print each offset object with high and low offsets
+		topicOffsets.forEach((offset) => {
+			core.info(`Partition: ${offset.partition}, Low: ${offset.low}, High: ${offset.high}, Offset: ${offset.offset}`);
+		});
+
+		await admin.disconnect();
+
 		
         await consumer.connect();
         await consumer.subscribe({
