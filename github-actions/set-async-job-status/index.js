@@ -85,6 +85,7 @@ const currentJobName = process.env.GITHUB_JOB;
 const group_suffix = `${workflowRunId}/${currentJobName}`;
 
 const kafka = new Kafka(kafkaConfig);
+const admin = kafka.admin();
 const consumer = kafka.consumer({
     groupId: group_id || `${group_prefix}${group_suffix}`
 });
@@ -110,34 +111,31 @@ async function run() {
                     const jobStatus = processMessage(value);
                     await consumer.commitOffsets([{ topic, partition, offset: (Number(message.offset) + 1).toString() }]);
                     if ([STATUS_SUCCESS, STATUS_FAILED].includes(jobStatus)) {
-                        core.setOutput("json", value);
-                        core.info(`\u001b[${jobStatus === STATUS_SUCCESS ? '32' : '31'}m[INFO] Marked current running job status as ${jobStatus}.`);
-                        await cleanupAndExit(jobStatus === STATUS_SUCCESS ? 0 : 1);
+                      core.setOutput("json", value);
+                      if (jobStatus === STATUS_SUCCESS) {
+						core.info(`\u001b[32m[INFO] Marked current running job status as ${jobStatus}.`);
+						setTimout(() => {
+							console.log('disconnect consumer');
+							consumer.stop()
+							process.exit(0);
+							}
+						, 1);
+                        process.exit(0);
+                      } else {
+						core.info(`\u001b[31m[INFO] Marked current running job status as ${jobStatus}.`);
+                        process.exit(1);
+                      }
                     }
                 } catch (error) {
                     core.error(`[ERROR] Error while processing message: ${error.message}`);
                 }
-            }
+            },
         });
     } catch (error) {
         core.setFailed(`[ERROR] Error while running the consumer: ${error.message}`);
-        await cleanupAndExit(1);
+        process.exit(1);
     }
 }
-
-async function cleanupAndExit(exitCode) {
-    try {
-        core.info('Disconnecting consumer');
-        await consumer.disconnect();
-    } catch (error) {
-        core.error(`[ERROR] Error while disconnecting the consumer: ${error.message}`);
-    } finally {
-        process.exit(exitCode);
-    }
-}
-
-
-
 
 function processMessage(message) {
     let event;
@@ -204,11 +202,9 @@ setTimeout(async () => {
 
 	// [EDGE SCENARIO FIX] Fetch and commit latest offset for each partition in given topic for consumer
 	try {
-		const admin = kafka.admin();
 		await admin.connect();
 		const topicOffsets = await admin.fetchTopicOffsets(topic_name);
         core.debug(`Fetched topic offsets:\n${JSON.stringify(topicOffsets, null, 2)}`);
-		await admin.disconnect();
 		const offsetsToCommit = topicOffsets.map(({ partition, offset }) => ({
             topic: topic_name,
             partition,
@@ -216,7 +212,7 @@ setTimeout(async () => {
         }));
 		await consumer.commitOffsets(offsetsToCommit);
 		core.debug('Offsets committed successfully');
-		await consumer.disconnect();
+		await admin.disconnect();
 	} catch(error) {
 		core.error(`[ERROR] Error while fetching and committing offsets: ${error.message}`);
 	}
