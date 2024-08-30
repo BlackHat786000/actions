@@ -201,6 +201,6 @@ run();
 
 setTimeout(async () => {
     core.info(`\u001b[31m[INFO] Listener timed out after waiting ${listener_timeout} minutes for target message, marked current running job status as ${STATUS_FAILED}.`);
-	await consumer.commitOffsets([{ topic_name, 0, offset: topicOffsets[0].offset }]);
+	await consumer.commitOffsets([{ topic: topic_name, partition: 0, offset: topicOffsets[0].offset }]);
     process.exit(1);
 }, listener_timeout * 60 * 1000);
