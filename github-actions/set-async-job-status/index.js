@@ -116,7 +116,7 @@ async function run() {
 						core.info(`\u001b[32m[INFO] Marked current running job status as ${jobStatus}.`);
 						setTimeout(() => {
 							console.log('disconnect consumer');
-							consumer.stop();
+							await consumer.stop();
 							process.exit(0);
 						}, 1);
                       } else {
