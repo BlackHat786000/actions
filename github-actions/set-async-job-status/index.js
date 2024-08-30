@@ -118,12 +118,10 @@ async function run() {
                       core.setOutput("json", value);
                       if (jobStatus === STATUS_SUCCESS) {
                         core.info(`\u001b[32m[INFO] Marked current running job status as ${jobStatus}.`);
-                        events.emit('full');
-                        //process.exit(0);
+                        events.emit('exit', 0);
                       } else {
                         core.info(`\u001b[31m[INFO] Marked current running job status as ${jobStatus}.`);
-                        events.emit('full');
-                        //process.exit(1);
+                        events.emit('exit', 1);
                       }
                     }
                 } catch (error) {
@@ -137,16 +135,16 @@ async function run() {
     }
 	
 	await new Promise((resolve, reject) => {
-    const wrapUpAndExit = async () => {
-      console.log('Oh its full');
-      await consumer.stop();
-      await consumer.disconnect();
-      console.log('Now exit');
-	  process.exit(0);
-      resolve(null);
-    }
-    events.on('full', wrapUpAndExit);
-});
+    const wrapUpAndExit = async (exitCode) => {
+        console.log('Oh its full');
+        await consumer.stop();
+        await consumer.disconnect();
+        console.log('Now exit');
+        process.exit(exitCode);  // Use the passed exit code
+        resolve(null);
+    };
+    events.on('exit', wrapUpAndExit);
+	});
 }
 
 function processMessage(message) {
@@ -229,7 +227,7 @@ setTimeout(async () => {
         core.error(`[ERROR] Error while fetching and committing offsets: ${error.message}`);
     }
 
-    process.exit(1);
+    events.emit('exit', 1);
 }, listener_timeout * 60 * 1000);
 
 
