@@ -90,25 +90,11 @@ const consumer = kafka.consumer({
 
 async function run() {
     try {
-		core.info('Getting topic offsets...');
-		await admin.connect();
-		topicOffsets = await admin.fetchTopicOffsets(topic_name);
-
-		// Print each offset object with high and low offsets
-		topicOffsets.forEach((offset) => {
-			core.info(`Partition: ${offset.partition}, Low: ${offset.low}, High: ${offset.high}, Offset: ${offset.offset}`);
-		});
-
-		await admin.disconnect();
-
-		
         await consumer.connect();
         await consumer.subscribe({
             topic: topic_name,
             fromBeginning: false
         });
-
-        
 
         await consumer.run({
             eachMessage: async ({ topic, partition, message }) => {
@@ -201,6 +187,20 @@ run();
 
 setTimeout(async () => {
     core.info(`\u001b[31m[INFO] Listener timed out after waiting ${listener_timeout} minutes for target message, marked current running job status as ${STATUS_FAILED}.`);
-	await consumer.commitOffsets([{ topic: topic_name, partition: 0, offset: topicOffsets[0].offset }]);
+const admin = kafka.admin();
+
+await admin.connect();
+const topicOffsets = await admin.fetchTopicOffsets(topic_name);
+
+// Set offsets for each partition to the latest
+await admin.setOffsets({
+    groupId: group_id || `${group_prefix}${process.env.GITHUB_RUN_ID}/${process.env.GITHUB_JOB}`,
+    topic: topic_name,
+    partitions: topicOffsets.map(({ partition, offset }) => ({
+        partition,
+        offset
+    }))
+});
+await admin.disconnect();
     process.exit(1);
 }, listener_timeout * 60 * 1000);
