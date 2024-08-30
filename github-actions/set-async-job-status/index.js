@@ -85,7 +85,6 @@ const currentJobName = process.env.GITHUB_JOB;
 const group_suffix = `${workflowRunId}/${currentJobName}`;
 
 const kafka = new Kafka(kafkaConfig);
-const admin = kafka.admin();
 const consumer = kafka.consumer({
     groupId: group_id || `${group_prefix}${group_suffix}`
 });
@@ -196,6 +195,7 @@ setTimeout(async () => {
 
 	// [EDGE SCENARIO FIX] Fetch and commit latest offset for each partition in given topic for consumer
 	try {
+		const admin = kafka.admin();
 		await admin.connect();
 		const topicOffsets = await admin.fetchTopicOffsets(topic_name);
         core.debug(`Fetched topic offsets:\n${JSON.stringify(topicOffsets, null, 2)}`);
