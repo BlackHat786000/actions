@@ -16,7 +16,6 @@ let ssl_enabled, ca_path, client_cert, client_key;
 let group_id, group_prefix;
 let success_when, fail_when, jinja_conditional;
 
-// Create an instance of EventEmitter
 const events = new EventEmitter();
 
 try {
@@ -89,7 +88,6 @@ const currentJobName = process.env.GITHUB_JOB;
 const group_suffix = `${workflowRunId}/${currentJobName}`;
 
 const kafka = new Kafka(kafkaConfig);
-const admin = kafka.admin();
 const consumer = kafka.consumer({
     groupId: group_id || `${group_prefix}${group_suffix}`
 });
@@ -117,10 +115,10 @@ async function run() {
                     if ([STATUS_SUCCESS, STATUS_FAILED].includes(jobStatus)) {
                       core.setOutput("json", value);
                       if (jobStatus === STATUS_SUCCESS) {
-                        core.info(`\u001b[32m[INFO] Marked current running job status as ${jobStatus}.`);
+						core.info(`\u001b[32m[INFO] Marked current running job status as ${jobStatus}.`);
                         events.emit('exit', 0);
                       } else {
-                        core.info(`\u001b[31m[INFO] Marked current running job status as ${jobStatus}.`);
+						core.info(`\u001b[31m[INFO] Marked current running job status as ${jobStatus}.`);
                         events.emit('exit', 1);
                       }
                     }
@@ -133,18 +131,17 @@ async function run() {
         core.setFailed(`[ERROR] Error while running the consumer: ${error.message}`);
         process.exit(1);
     }
-	
+
 	await new Promise((resolve, reject) => {
     const wrapUpAndExit = async (exitCode) => {
-        console.log('Oh its full');
-        await consumer.stop();
-        await consumer.disconnect();
-        console.log('Now exit');
-        process.exit(exitCode);  // Use the passed exit code
-        resolve(null);
-    };
+      await consumer.stop();
+      await consumer.disconnect();
+	  process.exit(exitCode);
+      resolve(null);
+    }
     events.on('exit', wrapUpAndExit);
 	});
+
 }
 
 function processMessage(message) {
@@ -206,28 +203,27 @@ run();
 setTimeout(async () => {
     core.info(`\u001b[31m[INFO] Listener timed out after waiting ${listener_timeout} minutes for target message, marked current running job status as ${STATUS_FAILED}.`);
 
-    // [EDGE SCENARIO] When new consumer with new consumer group times out without committing any offset
-    // and is restarted again, it processes messages from latest offset because of 'fromBeginning: false'
-    // Hence messages produced after timeout and before consumer restart are missed from being processed
+	// [EDGE SCENARIO] When new consumer with new consumer group times out without committing any offset
+	// and is restarted again, it processes messages from latest offset because of 'fromBeginning: false'
+	// Hence messages produced after timeout and before consumer restart are missed from being processed
 
-    // [EDGE SCENARIO FIX] Fetch and commit latest offset for each partition in given topic for consumer
-    try {
-        await admin.connect();
-        const topicOffsets = await admin.fetchTopicOffsets(topic_name);
+	// [EDGE SCENARIO FIX] Fetch and commit latest offset for each partition in given topic for consumer
+	try {
+		const admin = kafka.admin();
+		await admin.connect();
+		const topicOffsets = await admin.fetchTopicOffsets(topic_name);
         core.debug(`Fetched topic offsets:\n${JSON.stringify(topicOffsets, null, 2)}`);
-        const offsetsToCommit = topicOffsets.map(({ partition, offset }) => ({
+		await admin.disconnect();
+		const offsetsToCommit = topicOffsets.map(({ partition, offset }) => ({
             topic: topic_name,
             partition,
             offset: offset
         }));
-        await consumer.commitOffsets(offsetsToCommit);
-        core.debug('Offsets committed successfully');
-        await admin.disconnect();
-    } catch(error) {
-        core.error(`[ERROR] Error while fetching and committing offsets: ${error.message}`);
-    }
+		await consumer.commitOffsets(offsetsToCommit);
+		core.debug('Offsets committed successfully');
+		events.emit('exit', 1);
+	} catch(error) {
+		core.error(`[ERROR] Error while fetching and committing offsets: ${error.message}`);
+	}
 
-    events.emit('exit', 1);
 }, listener_timeout * 60 * 1000);
-
-
