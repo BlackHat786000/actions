@@ -119,11 +119,11 @@ async function run() {
                       if (jobStatus === STATUS_SUCCESS) {
                         core.info(`\u001b[32m[INFO] Marked current running job status as ${jobStatus}.`);
                         events.emit('full');
-                        process.exit(0);
+                        //process.exit(0);
                       } else {
                         core.info(`\u001b[31m[INFO] Marked current running job status as ${jobStatus}.`);
                         events.emit('full');
-                        process.exit(1);
+                        //process.exit(1);
                       }
                     }
                 } catch (error) {
