@@ -113,9 +113,11 @@ async function run() {
                       core.setOutput("json", value);
                       if (jobStatus === STATUS_SUCCESS) {
 						core.info(`\u001b[32m[INFO] Marked current running job status as ${jobStatus}.`);
+						await consumer.disconnect();
                         process.exit(0);
                       } else {
 						core.info(`\u001b[31m[INFO] Marked current running job status as ${jobStatus}.`);
+						await consumer.disconnect();
                         process.exit(1);
                       }
                     }
@@ -199,6 +201,7 @@ setTimeout(async () => {
 		await admin.connect();
 		const topicOffsets = await admin.fetchTopicOffsets(topic_name);
         core.debug(`Fetched topic offsets:\n${JSON.stringify(topicOffsets, null, 2)}`);
+		await admin.disconnect();
 		const offsetsToCommit = topicOffsets.map(({ partition, offset }) => ({
             topic: topic_name,
             partition,
@@ -206,7 +209,6 @@ setTimeout(async () => {
         }));
 		await consumer.commitOffsets(offsetsToCommit);
 		core.debug('Offsets committed successfully');
-		await admin.disconnect();
 		await consumer.disconnect();
 	} catch(error) {
 		core.error(`[ERROR] Error while fetching and committing offsets: ${error.message}`);
