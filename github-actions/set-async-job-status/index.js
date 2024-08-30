@@ -110,32 +110,34 @@ async function run() {
                     const jobStatus = processMessage(value);
                     await consumer.commitOffsets([{ topic, partition, offset: (Number(message.offset) + 1).toString() }]);
                     if ([STATUS_SUCCESS, STATUS_FAILED].includes(jobStatus)) {
-                      core.setOutput("json", value);
-                      if (jobStatus === STATUS_SUCCESS) {
-						core.info(`\u001b[32m[INFO] Marked current running job status as ${jobStatus}.`);
-						//await consumer.disconnect();
-                        //process.exit(0);
-                      } else {
-						core.info(`\u001b[31m[INFO] Marked current running job status as ${jobStatus}.`);
-						//await consumer.disconnect();
-                        //process.exit(1);
-                      }
+                        core.setOutput("json", value);
+                        core.info(`\u001b[${jobStatus === STATUS_SUCCESS ? '32' : '31'}m[INFO] Marked current running job status as ${jobStatus}.`);
+                        await cleanupAndExit(jobStatus === STATUS_SUCCESS ? 0 : 1);
                     }
                 } catch (error) {
                     core.error(`[ERROR] Error while processing message: ${error.message}`);
                 }
-				finally {
-					core.info('disconnecting consumer');
-					await consumer.disconnect();
-					process.exit(0);
-				}
             }
         });
     } catch (error) {
         core.setFailed(`[ERROR] Error while running the consumer: ${error.message}`);
-        process.exit(1);
+        await cleanupAndExit(1);
     }
 }
+
+async function cleanupAndExit(exitCode) {
+    try {
+        core.info('Disconnecting consumer');
+        await consumer.disconnect();
+    } catch (error) {
+        core.error(`[ERROR] Error while disconnecting the consumer: ${error.message}`);
+    } finally {
+        process.exit(exitCode);
+    }
+}
+
+
+
 
 function processMessage(message) {
     let event;
