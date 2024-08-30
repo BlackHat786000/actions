@@ -142,6 +142,7 @@ async function run() {
       await consumer.stop();
       await consumer.disconnect();
       console.log('Now exit');
+	  process.exit(0);
       resolve(null);
     }
     events.on('full', wrapUpAndExit);
