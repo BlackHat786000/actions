@@ -21,7 +21,48 @@ jobs:
   
       - name: Set async job status
         id: async_step
+        uses: BlackHat786000/actions/github-actions/set-async-job-status@name: TEST KAFKA
+
+on:
+  repository_dispatch:
+    types: [test-kafka]
+
+jobs:
+  async_job_status:
+    runs-on: ubuntu-latest
+    name: async_job
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Generate random job ID
+        id: random_job_id
+        run: echo "::set-output name=job_id::$(shuf -i 1-100000 -n 1)" # Generates a random number between 1 and 100000
+      
+      - name: Print random job ID
+        run: echo "Random job ID is ${{ steps.random_job_id.outputs.job_id }}"
+  
+      - name: Set async job status
+        id: async_step
         uses: BlackHat786000/actions/github-actions/set-async-job-status@c7c1fe1e6b9a1f502bbf7b42fe848f1aead1a767
+        with:
+          kafka_broker: '13.233.151.94:9093'
+          topic_name: 'myFirstJsonTopic'
+          job_id: 12345678
+          authentication: 'SASL PLAIN'
+          sasl_username: ${{ secrets.SASL_USERNAME }}
+          sasl_password: ${{ secrets.SASL_PASSWORD }}
+          listener_timeout: 5
+          ssl_enabled: false
+          jinja_conditional: |
+            {% if event.task_id == '786013' and event.task_status == 'SUCCESS' %}
+            SUCCESS
+            {% elif event.task_id == '123456' and event.task_status == 'FAIL' %}
+            FAILED
+            {% endif %}
+          
+      - name: Get the JSON message
+        run: echo "The event was ${{ steps.async_step.outputs.json }}"
         with:
           kafka_broker: '13.233.151.94:9093'
           topic_name: 'myFirstJsonTopic'
